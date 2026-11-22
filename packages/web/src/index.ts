@@ -888,10 +888,10 @@ function exit() {
   dead?.()
   leave()
   later()
-  if (typeof Request === 'function' && 'keepalive' in Request.prototype) {
-    // While a send() is in flight it keeps going after the page closes, and WebKit refuses a second
-    // keepalive request beside it: the rest waits for it and leaves in the next batch.
-    let room = inflight ? 0 : 61440
+  // While a send() is in flight WebKit refuses a second keepalive fetch beside it, so the rest goes
+  // through sendBeacon instead: waiting for the next batch loses it when the page is navigating away.
+  if (!inflight && typeof Request === 'function' && 'keepalive' in Request.prototype) {
+    let room = 61440
     while (queue.length && !stopped && room > 2048) {
       const batch = take(room)
       const dropped = lost

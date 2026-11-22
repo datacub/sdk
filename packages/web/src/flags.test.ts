@@ -86,14 +86,15 @@ describe('flags', () => {
     expect(await f.experiment('nope')).toBe('A')
   })
 
-  test('before consent: flags are off, experiments show A, nothing is requested or recorded', async () => {
+  test('before consent: only a 100% flag is on, experiments show A, nothing is recorded', async () => {
     const core = fakeCore({ state: 'pending', anon: '' })
     const f = makeFlags(() => core)
     // an experiment needs no request before consent
     expect(await f.experiment('checkout')).toBe('A')
-    expect(await f.flag('on')).toBe(false)
-    expect(await f.flag('half')).toBe(false)
     expect(calls).toHaveLength(0)
+    // a rollout to everyone needs no visitor; a partial one does
+    expect(await f.flag('on')).toBe(true)
+    expect(await f.flag('half')).toBe(false)
     expect(core.sent).toHaveLength(0)
     // consent granted later on the same page: assigned from then on
     core.state = 'granted'

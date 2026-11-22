@@ -88,9 +88,8 @@ export function makeFlags(client: () => Client) {
   /** Is this flag on for this visitor? false when it is unknown, off, or cannot be decided. */
   async function flag(key: string): Promise<boolean> {
     try {
-      // before tracking starts (on a server, consent pending or revoked: the core has no anon_id
-      // yet) the answer is false and nothing is requested
-      if (typeof window === 'undefined' || !(await started())?.[4]) return false
+      // on a server there is nothing to ask; before tracking starts only a 100% flag can be on
+      if (typeof window === 'undefined') return false
       // typeof, not `in`: a key such as "constructor" must not find Object's own members
       const r = (await config())?.flags[key]
       if (typeof r !== 'number') return false

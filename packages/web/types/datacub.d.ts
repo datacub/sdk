@@ -1,5 +1,5 @@
-// datacub web SDK 0.4.0, for the script tag. Save as datacub.d.ts in your project: `datacub` is then typed.
-export declare const VERSION = "0.4.0";
+// datacub web SDK 0.4.2, for the script tag. Save as datacub.d.ts in your project: `datacub` is then typed.
+export declare const VERSION = "0.4.2";
 export type Property = string | number | boolean | null | Date | Property[] | {
     [key: string]: Property;
 };
