@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.2](https://github.com/datacub/sdk/compare/web-v0.4.0...web-v0.4.2) (2026-11-22)
+
+
+### Bug Fixes
+
+* **web:** accept the 8-character project id (data-id), send to the host the script came from ([37df73b](https://github.com/datacub/sdk/commit/37df73bbf498362c55dff04363550ffcf66a7f90))
+
 ## 0.4.0
 
 - `datacub.identify({ id, ...traits })` works: the id can be `id`, `userId` or `user_id`, and `fullName` and `phoneNumber` count as `name` and `phone`.
