@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.3](https://github.com/datacub/sdk/compare/web-v0.4.2...web-v0.4.3) (2026-11-22)
+
+
+### Bug Fixes
+
+* **web:** send on page hide while a batch is in flight; a 100% flag is on before consent ([5276091](https://github.com/datacub/sdk/commit/5276091fb45581310bf78e691d7816a6ef59127c))
+
 ## [0.4.2](https://github.com/datacub/sdk/compare/web-v0.4.0...web-v0.4.2) (2026-11-22)
 
 
