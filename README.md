@@ -20,7 +20,7 @@ Paste this into Claude Code, Cursor, Codex or any coding agent:
 
 ```text
 Add datacub analytics to this project. Follow https://docs.datacub.to/skill/datacub/SKILL.md
-My datacub project key: pk_live_YOUR_KEY
+My datacub project ID: YOUR_PROJECT_ID
 ```
 
 The agent picks the right SDK for your framework, installs it, adds your key events and checks they arrive. To keep the skill installed: `npx skills add datacub/sdk`.
@@ -36,7 +36,7 @@ npm install @datacub/web
 ```ts
 import datacub from '@datacub/web'
 
-datacub.init('pk_live_YOUR_KEY')
+datacub.init('YOUR_PROJECT_ID')
 datacub.track('signup_completed', { plan: 'pro' })
 ```
 
@@ -51,11 +51,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Application from 'expo-application'
 import datacub from '@datacub/react-native'
 
-datacub.init('pk_live_YOUR_KEY', { storage: AsyncStorage, app: Application })
+datacub.init('YOUR_PROJECT_ID', { storage: AsyncStorage, app: Application })
 datacub.screen('Home')
 ```
 
-Your project key is in datacub under **Settings → Integrations**.
+Your project ID is in datacub under **Settings → Integrations**.
 
 ## Docs
 

@@ -9,7 +9,7 @@ npm install @datacub/web
 ```ts
 import datacub from '@datacub/web'
 
-datacub.init('pk_live_YOUR_KEY')
+datacub.init('YOUR_PROJECT_ID')
 
 datacub.track('signup_completed', { plan: 'pro' }) // a custom event
 datacub.identify(user.id, { email, name }) // after login

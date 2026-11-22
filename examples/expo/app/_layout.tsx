@@ -7,7 +7,7 @@ import * as Application from 'expo-application'
 import { Stack, useSegments } from 'expo-router'
 import { useEffect } from 'react'
 
-datacub.init(process.env.EXPO_PUBLIC_DATACUB_KEY ?? 'pk_test_YOUR_KEY', {
+datacub.init(process.env.EXPO_PUBLIC_DATACUB_ID ?? 'YOUR_PROJECT_ID', {
   storage: AsyncStorage,
   app: Application,
 })

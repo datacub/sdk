@@ -1071,8 +1071,9 @@ function start(publicKey: unknown, o: InitOptions = {}) {
   dev = /^(?:localhost|127\.0\.0\.1|\[::1\])$|\.(?:localhost|test)$/.test(location.hostname)
   if (started || typeof publicKey !== 'string') return
   // A secret key in a browser is a leaked credential: refused loudly, in every environment.
-  // biome-ignore lint/suspicious/noConsole: the one message production ever prints
-  if (/^sk_/.test(publicKey)) return console.error('[datacub] refused a secret key. Use a pk_ key.')
+  if (/^sk_/.test(publicKey))
+    // biome-ignore lint/suspicious/noConsole: the one message production ever prints
+    return console.error('[datacub] refused a secret key. Use your project ID.')
   // The default is datacub's hosted ingestion; a first-party proxy path or another origin goes in apiHost.
   // https, or http on localhost; a path such as /datacub is resolved against the page. No user info:
   // http://127.0.0.1@evil.example is evil.example.
@@ -1080,7 +1081,9 @@ function start(publicKey: unknown, o: InitOptions = {}) {
   try {
     u = new URL(o.apiHost || 'https://in.datacub.to', location.href)
   } catch {}
-  if (!/^pk_(?:live|test)_[A-Za-z0-9]{24,48}$/.test(publicKey)) return warn('init: bad key')
+  // the project's public ID, or a pk_ key from an install before IDs
+  if (!/^(?:pk_(?:live|test)_[A-Za-z0-9]{24,48}|[a-z0-9]{8})$/.test(publicKey))
+    return warn('init: bad key')
   if (
     !u ||
     u.username ||
@@ -1093,7 +1096,8 @@ function start(publicKey: unknown, o: InitOptions = {}) {
     return warn('init: bad apiHost')
   started = true
   key = publicKey
-  ns = `_${publicKey.slice(8, 16)}`
+  // cookie names end with the ID, or 8 characters of a key after pk_live_: one visitor per project
+  ns = `_${publicKey.replace(/^pk_[a-z]+_/, '').slice(0, 8)}`
   endpoint = `${u.origin}${u.pathname.replace(/\/+$/, '')}/v1/batch`
   hashRouting = o.hashRouting === true
   // developer config, not user data: a git SHA or deployment ID must not be scrubbed

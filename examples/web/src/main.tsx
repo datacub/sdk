@@ -2,8 +2,8 @@ import datacub from '@datacub/web'
 import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
-// pk_test_ keys work on localhost. Copy yours from datacub, Settings → Integrations.
-datacub.init(import.meta.env.VITE_DATACUB_KEY ?? 'pk_test_YOUR_KEY')
+// your 8-character project ID, from datacub, Settings → Integrations
+datacub.init(import.meta.env.VITE_DATACUB_ID ?? 'YOUR_PROJECT_ID')
 
 function App() {
   const [done, setDone] = useState(false)
