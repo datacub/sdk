@@ -424,9 +424,9 @@ test.describe('sessions', () => {
     expect(await ss()).toEqual(first)
     await page.clock.fastForward(4000)
     await page.evaluate(() => window.datacub.track('at_6s'))
-    const next = await ss()
-    expect(next[0]).toBe(first[0])
-    expect(Number(next[2]) - Number(first[2])).toBeGreaterThan(5000)
+    // WebKit can report a cookie a moment after the page wrote it
+    await expect.poll(async () => Number((await ss())[2]) - Number(first[2])).toBeGreaterThan(5000)
+    expect((await ss())[0]).toBe(first[0])
     await flush(page)
     const all = await waitFor(page, run, 1, 'at_6s')
     expect(new Set(all.map((e) => e.session_id))).toEqual(new Set([first[0]]))
