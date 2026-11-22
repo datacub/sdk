@@ -1,0 +1,5 @@
+node_modules
+dist
+*.tgz
+test/metro/.out
+test/hermes/.out

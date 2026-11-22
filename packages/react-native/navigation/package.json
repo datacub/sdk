@@ -1,0 +1,5 @@
+{
+  "main": "../dist/navigation.cjs",
+  "module": "../dist/navigation.mjs",
+  "types": "../dist/navigation.d.ts"
+}

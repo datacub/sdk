@@ -1,0 +1,101 @@
+{
+  "name": "@datacub/react-native",
+  "version": "0.1.0-beta.1",
+  "description": "datacub product analytics for React Native and Expo. Pure JavaScript, no device identifiers. Beta.",
+  "keywords": [
+    "analytics",
+    "product-analytics",
+    "react-native",
+    "expo",
+    "datacub",
+    "arabic"
+  ],
+  "homepage": "https://datacub.to",
+  "bugs": {
+    "url": "https://github.com/datacub/react-native-sdk/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/datacub/react-native-sdk.git"
+  },
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "react-native": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      },
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      },
+      "default": "./dist/index.cjs"
+    },
+    "./navigation": {
+      "react-native": {
+        "types": "./dist/navigation.d.cts",
+        "default": "./dist/navigation.cjs"
+      },
+      "import": {
+        "types": "./dist/navigation.d.ts",
+        "default": "./dist/navigation.mjs"
+      },
+      "require": {
+        "types": "./dist/navigation.d.cts",
+        "default": "./dist/navigation.cjs"
+      },
+      "default": "./dist/navigation.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "navigation",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "bun scripts/build.ts",
+    "typecheck": "tsc -p .",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "test": "bun run build && bun test",
+    "test:hermes": "bun run build && bun test/hermes/run.ts",
+    "test:bundle": "bun run build && node test/metro/bundle.mjs && bun test/metro/hermes.ts",
+    "pack:check": "bun scripts/pack-check.ts"
+  },
+  "peerDependencies": {
+    "react-native": ">=0.75.0"
+  },
+  "devDependencies": {
+    "@babel/core": "8.1.2",
+    "@babel/runtime": "8.1.2",
+    "@biomejs/biome": "2.6.2",
+    "@react-native/babel-preset": "0.88.1",
+    "@react-native/metro-config": "0.88.1",
+    "@types/bun": "1.4.4",
+    "hermes-compiler": "260318099.0.5",
+    "metro": "0.88.0",
+    "react": "19.3.1",
+    "react-native": "0.88.1",
+    "typescript": "7.0.2",
+    "zod": "4.6.7"
+  },
+  "packageManager": "bun@1.4.4",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "tag": "next"
+  },
+  "author": "datacub (https://datacub.to)"
+}
