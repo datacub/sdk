@@ -11,7 +11,13 @@ mkdirSync(`${out}/hbc`, { recursive: true })
 const { hermes, hermesc: old } = await hermes013()
 const compilers = [
   ['0.75', old],
-  ['0.88', `${root}/node_modules/hermes-compiler/hermesc/linux64-bin/hermesc`],
+  [
+    '0.88',
+    Bun.resolveSync('hermes-compiler/package.json', import.meta.dir).replace(
+      'package.json',
+      'hermesc/linux64-bin/hermesc',
+    ),
+  ],
 ] as const
 
 const prelude = `var fetched = [];

@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   check:
-    name: Lint, types, tests, package
+    name: Lint, types, tests, packages
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -29,14 +29,42 @@ jobs:
       - run: bun run lint
       - run: bun run typecheck
       - run: bun run test
-      - run: bun run pack:check
-      - name: Audit dependencies
-        run: bun audit --audit-level=moderate
+      - run: bun run --filter '@datacub/*' pack:check
+      - name: Example app builds against the web package
+        run: bun run --cwd examples/web build
+      - run: bun audit --audit-level=moderate
 
-  runtime:
-    name: Hermes and Metro
+  web-browsers:
+    name: Web in Chromium, Firefox, WebKit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: packages/web
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: bunx playwright install --with-deps chromium firefox webkit
+      - run: bun run test:browser
+      - if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-results
+          path: packages/web/test-results/
+          retention-days: 7
+
+  react-native-runtime:
+    name: React Native on Hermes and Metro
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: packages/react-native
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -81,11 +109,11 @@ jobs:
           fail-on-severity: moderate
           comment-summary-in-pr: on-failure
 
-  # Dependabot updates merge themselves once every check above passes. Safe because the package has
-  # no runtime dependencies: every update is dev tooling or a CI action, and the checks gate it.
+  # Dependabot updates merge themselves once every check above passes. Safe because neither package
+  # has runtime dependencies: every update is dev tooling or a CI action, and the checks gate it.
   automerge:
     name: Merge Dependabot update
-    needs: [check, runtime, secrets, dependency-review]
+    needs: [check, web-browsers, react-native-runtime, secrets, dependency-review]
     if: github.event_name == 'pull_request' && github.actor == 'dependabot[bot]'
     runs-on: ubuntu-24.04
     timeout-minutes: 5

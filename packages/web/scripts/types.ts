@@ -32,7 +32,7 @@ export function generate(): Record<string, string> {
         files: ['index.ts', 'feedback.ts', 'flags-npm.ts'].map((f) => `${dir}/src/${f}`),
       }),
     )
-    const r = Bun.spawnSync([`${dir}/node_modules/.bin/tsc`, '-p', `${out}/tsconfig.json`])
+    const r = Bun.spawnSync([`${dir}/../../node_modules/.bin/tsc`, '-p', `${out}/tsconfig.json`])
     if (r.exitCode) throw new Error(`tsc failed: ${r.stdout}${r.stderr}`)
     const files: Record<string, string> = {}
     for (const f of readdirSync(`${out}/d`)) files[f] = readFileSync(`${out}/d/${f}`, 'utf8')

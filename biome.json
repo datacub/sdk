@@ -10,10 +10,11 @@
       "**",
       "!**/*.md",
       "!**/test/fixtures",
-      "!types",
-      "!dist",
-      "!test-results",
-      "!playwright-report"
+      "!**/test/corpus",
+      "!packages/web/types",
+      "!**/dist",
+      "!**/test-results",
+      "!**/playwright-report"
     ]
   },
   "formatter": {

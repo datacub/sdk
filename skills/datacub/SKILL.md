@@ -8,7 +8,8 @@ description: Add datacub product analytics to a website, web app (React, Next.js
 datacub is product analytics: page views, sessions, clicks and the events you track. Do the whole
 integration yourself, from the code. Keep the change small and touch nothing unrelated.
 
-Current versions: `@datacub/web` 0.4.0 <!-- x-release-please-version -->, `@datacub/react-native` beta (`@next`).
+Packages: `@datacub/web` (stable) and `@datacub/react-native` (beta, `@next`). Source and issues:
+https://github.com/datacub/sdk. Full docs: https://docs.datacub.to.
 
 ## 1. Get the project key
 
@@ -67,7 +68,8 @@ export function Datacub() {
 ```
 
 Plain HTML, or if the npm package cannot be installed: put the script tag in `<head>` instead
-(replace `<version>` with the current `@datacub/web` version above).
+(Settings → Integrations has this line with the version and key filled in; otherwise `<version>` is
+the output of `npm view @datacub/web version`).
 
 ```html
 <script src="https://in.datacub.to/v1/sdk/datacub-<version>.min.js" data-key="pk_live_YOUR_KEY" defer></script>

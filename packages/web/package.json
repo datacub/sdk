@@ -9,16 +9,16 @@
     "datacub",
     "arabic"
   ],
-  "homepage": "https://datacub.to",
+  "homepage": "https://docs.datacub.to",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/datacub/web-sdk.git"
+    "url": "git+https://github.com/datacub/sdk.git",
+    "directory": "packages/web"
   },
-  "bugs": "https://github.com/datacub/web-sdk/issues",
+  "bugs": "https://github.com/datacub/sdk/issues",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
-  "packageManager": "bun@1.4.4",
   "exports": {
     ".": {
       "types": "./types/index.d.ts",
@@ -49,22 +49,17 @@
   "scripts": {
     "build": "bun scripts/build.ts",
     "typecheck": "tsc -p .",
-    "lint": "biome check .",
-    "format": "biome check --write .",
     "test": "bun test",
     "test:browser": "playwright test",
     "pack:check": "bun scripts/pack-check.ts"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.6.8",
     "@playwright/test": "1.65.1",
     "@tanstack/react-router": "1.170.46",
-    "@types/bun": "1.4.4",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "typescript": "7.0.2",
     "vue": "3.5.45",
     "vue-router": "5.5.1"
   },

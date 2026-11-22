@@ -10,13 +10,12 @@
     "datacub",
     "arabic"
   ],
-  "homepage": "https://datacub.to",
-  "bugs": {
-    "url": "https://github.com/datacub/react-native-sdk/issues"
-  },
+  "homepage": "https://docs.datacub.to",
+  "bugs": "https://github.com/datacub/sdk/issues",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/datacub/react-native-sdk.git"
+    "url": "git+https://github.com/datacub/sdk.git",
+    "directory": "packages/react-native"
   },
   "license": "MIT",
   "type": "module",
@@ -67,8 +66,6 @@
   "scripts": {
     "build": "bun scripts/build.ts",
     "typecheck": "tsc -p .",
-    "lint": "biome check .",
-    "format": "biome check --write .",
     "test": "bun run build && bun test",
     "test:hermes": "bun run build && bun test/hermes/run.ts",
     "test:bundle": "bun run build && node test/metro/bundle.mjs && bun test/metro/hermes.ts",
@@ -80,18 +77,14 @@
   "devDependencies": {
     "@babel/core": "8.1.2",
     "@babel/runtime": "8.1.2",
-    "@biomejs/biome": "2.6.2",
     "@react-native/babel-preset": "0.88.1",
     "@react-native/metro-config": "0.88.1",
-    "@types/bun": "1.4.4",
     "hermes-compiler": "260318099.0.5",
     "metro": "0.88.0",
     "react": "19.3.1",
     "react-native": "0.88.1",
-    "typescript": "7.0.2",
     "zod": "4.6.7"
   },
-  "packageManager": "bun@1.4.4",
   "publishConfig": {
     "access": "public",
     "provenance": true,

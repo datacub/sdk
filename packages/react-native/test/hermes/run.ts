@@ -13,7 +13,10 @@ mkdirSync(out, { recursive: true })
 const compilers = [
   {
     name: 'hermes-compiler (Hermes 1.0, React Native 0.88)',
-    hermesc: `${root}/node_modules/hermes-compiler/hermesc/linux64-bin/hermesc`,
+    hermesc: Bun.resolveSync('hermes-compiler/package.json', import.meta.dir).replace(
+      'package.json',
+      'hermesc/linux64-bin/hermesc',
+    ),
   },
   {
     name: 'Hermes 0.13 (React Native 0.75, the oldest supported)',
