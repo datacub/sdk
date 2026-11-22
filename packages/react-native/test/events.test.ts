@@ -330,7 +330,7 @@ describe('setup', () => {
       spy.mockRestore()
     }
     expect(srv.requests).toBe(0)
-    expect(errors).toEqual(['[datacub] refused a secret key. Use a pk_ key.'])
+    expect(errors).toEqual(['[datacub] refused a secret key. Use your project ID.'])
   })
 
   test('sends to https://in.datacub.to when no apiHost is given', async () => {

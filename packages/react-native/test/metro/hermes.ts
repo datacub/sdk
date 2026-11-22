@@ -5,7 +5,6 @@ import { mkdirSync } from 'node:fs'
 import { $ } from 'bun'
 import { hermes013 } from '../hermes/fetch.ts'
 
-const root = `${import.meta.dir}/../..`
 const out = `${import.meta.dir}/.out`
 mkdirSync(`${out}/hbc`, { recursive: true })
 const { hermes, hermesc: old } = await hermes013()

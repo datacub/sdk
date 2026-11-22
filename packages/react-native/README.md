@@ -13,7 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 import * as Application from 'expo-application'
 import datacub from '@datacub/react-native'
 
-datacub.init('pk_live_YOUR_KEY', { storage: AsyncStorage, app: Application })
+datacub.init('YOUR_PROJECT_ID', { storage: AsyncStorage, app: Application })
 
 datacub.screen('Home') // a screen view
 datacub.track('signup_completed', { plan: 'pro' }) // a custom event

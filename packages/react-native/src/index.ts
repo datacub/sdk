@@ -630,19 +630,20 @@ function reset() {
 function start(publicKey: unknown, o: InitOptions = {}) {
   if (started || typeof publicKey !== 'string') return
   // A secret key in an app is a leaked credential: refused loudly, in every build.
-  // biome-ignore lint/suspicious/noConsole: the one error a release build ever prints
-  if (/^sk_/.test(publicKey)) return console.error('[datacub] refused a secret key. Use a pk_ key.')
+  if (/^sk_/.test(publicKey))
+    // biome-ignore lint/suspicious/noConsole: the one error a release build ever prints
+    return console.error('[datacub] refused a secret key. Use your project ID.')
   const host = (o.apiHost || 'https://in.datacub.to').replace(/\/+$/, '')
   // plain http only to this machine, the Android emulator's host or a private network, for development
   if (
-    !/^pk_(?:live|test)_[A-Za-z0-9]{24,48}$/.test(publicKey) ||
+    !/^(?:pk_(?:live|test)_[A-Za-z0-9]{24,48}|[a-z0-9]{8})$/.test(publicKey) ||
     // no user info: http://10.0.0.2@evil.example would be evil.example
     /^[a-z]+:\/\/[^/]*@/i.test(host) ||
     !/^https:\/\/|^http:\/\/(?:localhost|127\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(?:1[6-9]|2\d|3[01])\.\d+\.\d+)[:/]/.test(
       `${host}/`,
     )
   )
-    return warn('init: expected a pk_live_ or pk_test_ key and an https apiHost')
+    return warn('init: expected a project ID and an https apiHost')
   if (Platform.OS !== 'ios' && Platform.OS !== 'android')
     return warn(`init: ${Platform.OS} is not supported; on the web use @datacub/web`)
   started = true
