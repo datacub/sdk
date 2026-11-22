@@ -1,6 +1,6 @@
 {
   "name": "@datacub/react-native",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "description": "datacub product analytics for React Native and Expo. Pure JavaScript, no device identifiers. Beta.",
   "keywords": [
     "analytics",
