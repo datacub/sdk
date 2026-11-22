@@ -19,7 +19,7 @@
 Paste this into Claude Code, Cursor, Codex or any coding agent:
 
 ```text
-Add datacub analytics to this project. Follow https://raw.githubusercontent.com/datacub/sdk/main/skills/datacub/SKILL.md
+Add datacub analytics to this project. Follow https://docs.datacub.to/skill/datacub/SKILL.md
 My datacub project key: pk_live_YOUR_KEY
 ```
 
