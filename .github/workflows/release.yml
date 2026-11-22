@@ -123,7 +123,7 @@ jobs:
       - if: steps.state.outputs.publish == 'true'
         name: Verify the published package installs
         run: |
-          for i in 1 2 3 4 5 6; do npm view "$NAME@$VERSION" version && break; sleep 10; done
+          for i in $(seq 1 36); do npm view "$NAME@$VERSION" version --prefer-online && break; sleep 10; done # new versions can take minutes to appear
           cd "$(mktemp -d)" && npm init -y >/dev/null
           npm install --ignore-scripts --no-audit "$NAME@$VERSION"
           npm audit signatures
