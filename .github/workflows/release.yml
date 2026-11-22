@@ -1,8 +1,8 @@
 name: Release
 
 # On every push to main, for each package on its own:
-# 1. release-please opens a release pull request per package (version + CHANGELOG from the
-#    conventional commits that touched it) and merges it at once, which tags it (web-v0.4.1,
+# 1. release-please opens one release pull request (each changed package gets its own version and
+#    CHANGELOG from the conventional commits that touched it) and merges it at once, which tags them (web-v0.4.2,
 #    react-native-v0.1.0-beta.2) and creates the GitHub release.
 # 2. If npm lacks a package's version, build re-runs the checks and packs it, and publish uploads
 #    that tarball with provenance (no dependency code runs with publish rights), then installs it
