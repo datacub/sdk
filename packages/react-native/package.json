@@ -79,7 +79,7 @@
     "@babel/runtime": "8.1.2",
     "@react-native/babel-preset": "0.88.1",
     "@react-native/metro-config": "0.88.1",
-    "hermes-compiler": "260318099.0.5",
+    "hermes-compiler": "260318099.0.8",
     "metro": "0.88.0",
     "react": "19.3.1",
     "react-native": "0.88.1",
