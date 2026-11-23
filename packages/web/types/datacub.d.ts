@@ -1,5 +1,5 @@
-// datacub web SDK 0.4.2, for the script tag. Save as datacub.d.ts in your project: `datacub` is then typed.
-export declare const VERSION = "0.4.2";
+// datacub web SDK 0.4.3, for the script tag. Save as datacub.d.ts in your project: `datacub` is then typed.
+export declare const VERSION = "0.4.3";
 export type Property = string | number | boolean | null | Date | Property[] | {
     [key: string]: Property;
 };
@@ -26,6 +26,12 @@ export interface InitOptions {
      * model), loaded after tracking starts from apiHost. Default true.
      */
     insights?: boolean;
+    /**
+     * The feedback widget, loaded from apiHost only when the project has a live question or the page
+     * opens the "Send feedback" card, and only while tracking. Default true; false never loads it
+     * (data-feedback="off" on the script tag).
+     */
+    feedback?: boolean;
     /** Turn kinds of capture off on this site. The project's settings in datacub can turn them off too. */
     capture?: Capture;
 }
@@ -78,11 +84,11 @@ export interface DatacubClient {
         grant(options?: GrantOptions): void;
         revoke(): void;
     };
-    /** Added by the feedback widget (start() from @datacub/web/feedback, or /v1/feedback.js): show one question now. */
+    /** Show one question now (the feedback widget loads first when it is not on the page yet). */
     ask?(questionId: string, options?: {
         into?: Element | string;
     }): void;
-    /** Added by the feedback module: open the "Send feedback" card. */
+    /** Open the "Send feedback" card (the feedback widget loads first when it is not on the page yet). */
     feedback?(): void;
     /**
      * Added by the script-tag flags module (/v1/flags.js; with npm, import flag from @datacub/web/flags): is this feature flag on for this

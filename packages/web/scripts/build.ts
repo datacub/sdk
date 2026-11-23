@@ -8,7 +8,8 @@ import { version } from '../package.json' with { type: 'json' }
 import { writeTypes } from './types.ts'
 
 // 0.3.1: 9216 to 9472 for the insights integrity hash and the cookie-free page-hide send
-const BUDGET = 9472
+// 0.5.0: 9472 to 9728 for loading the feedback widget itself (one script tag instead of two)
+const BUDGET = 9728
 const dir = `${import.meta.dir}/..`
 
 // The feedback widget is opt-in and loads apart from the core, with its own budget.

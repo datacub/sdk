@@ -1,6 +1,6 @@
 // Script-tag build: window.datacub. Replays calls the inline stub queued before load, and starts itself
 // from <script src=".../sdk.js" data-id="k7qm2xpa" data-api-host="..."> when those are present
-// (data-require-consent: wait for datacub.consent.grant()).
+// (data-require-consent: wait for datacub.consent.grant(); data-feedback="off": no feedback widget).
 import datacub, { type InitOptions } from './index.ts'
 
 const w = window as unknown as { datacub?: { _fb?: unknown } }
@@ -24,6 +24,8 @@ if (!w.datacub?._fb) {
     datacub.init(id, {
       apiHost: tag.apiHost,
       requireConsent: tag.requireConsent != null,
+      // data-feedback="off": never load the feedback widget
+      feedback: tag.feedback !== 'off',
     } as InitOptions)
   for (const c of queued) {
     // "track", or a dotted name such as "consent.grant"; only the SDK's own names, and a bad entry
