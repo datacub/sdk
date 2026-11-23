@@ -10,13 +10,21 @@ interface Run {
   batches: { events: Record<string, unknown>[]; body: string; at: number }[]
   requests: number
   plan: { status: number; retryAfter?: number; delay?: number; body?: string }[]
+  // feedback.pw.ts: whether batches answer feedback: 1, the questions /v1/feedback offers, and what
+  // the widget fetched
+  fb: { hint: boolean; questions: unknown[]; script: number; asks: number; seen: number }
 }
 const runs = new Map<string, Run>()
 const apps: Record<string, Promise<string>> = {}
 const run = (id: string) => {
   let r = runs.get(id)
   if (!r) {
-    r = { batches: [], requests: 0, plan: [] }
+    r = {
+      batches: [],
+      requests: 0,
+      plan: [],
+      fb: { hint: false, questions: [], script: 0, asks: 0, seen: 0 },
+    }
     runs.set(id, r)
   }
   return r
@@ -52,10 +60,33 @@ Bun.serve({
             body,
             at: Date.now(),
           })
-        return new Response(step.body ?? (step.status === 200 ? '{"accepted":1}' : '{}'), {
+        const ok = r.fb.hint ? '{"accepted":1,"feedback":1}' : '{"accepted":1}'
+        return new Response(step.body ?? (step.status === 200 ? ok : '{}'), {
           status: step.status,
           headers: step.retryAfter ? { 'Retry-After': String(step.retryAfter) } : {},
         })
+      }
+      // the feedback widget and its endpoints, as capture serves them
+      if (tail === 'v1/feedback.js') {
+        r.fb.script++
+        return new Response(Bun.file(`${dir}/dist/feedback.js`), {
+          headers: { 'Content-Type': 'text/javascript' },
+        })
+      }
+      if (tail === 'v1/feedback' && req.method === 'POST') {
+        r.fb.asks++
+        return Response.json({
+          questions: r.fb.questions,
+          settings: { accent: '#1f1f1f', position: 'end', theme: 'light' },
+        })
+      }
+      if (tail.startsWith('v1/feedback/') && req.method === 'POST') {
+        if (tail === 'v1/feedback/seen') r.fb.seen++
+        return Response.json({ ok: true })
+      }
+      if (tail === 'feedback' && req.method === 'POST') {
+        Object.assign(r.fb, await req.json())
+        return new Response('ok')
       }
       if (tail === 'plan' && req.method === 'POST') {
         r.plan = await req.json()

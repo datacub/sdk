@@ -52,6 +52,12 @@ export interface InitOptions {
    * model), loaded after tracking starts from apiHost. Default true.
    */
   insights?: boolean
+  /**
+   * The feedback widget, loaded from apiHost only when the project has a live question or the page
+   * opens the "Send feedback" card, and only while tracking. Default true; false never loads it
+   * (data-feedback="off" on the script tag).
+   */
+  feedback?: boolean
   /** Turn kinds of capture off on this site. The project's settings in datacub can turn them off too. */
   capture?: Capture
 }
@@ -107,9 +113,9 @@ export interface DatacubClient {
   ): void
   reset(): void
   consent: { grant(options?: GrantOptions): void; revoke(): void }
-  /** Added by the feedback widget (start() from @datacub/web/feedback, or /v1/feedback.js): show one question now. */
+  /** Show one question now (the feedback widget loads first when it is not on the page yet). */
   ask?(questionId: string, options?: { into?: Element | string }): void
-  /** Added by the feedback module: open the "Send feedback" card. */
+  /** Open the "Send feedback" card (the feedback widget loads first when it is not on the page yet). */
   feedback?(): void
   /**
    * Added by the script-tag flags module (/v1/flags.js; with npm, import flag from @datacub/web/flags): is this feature flag on for this
@@ -139,6 +145,9 @@ let d: Document
 let started = false
 let opt: Capture = {}
 let insights = true
+let feedback = true
+// The feedback widget: 0 not started, 1 started, or the call it makes once it starts
+let fbw: 0 | 1 | unknown[] = 0
 // per page: what the SDK saw, sent as counts on $pageleave
 let sentMs = 0
 let errN = 0
@@ -852,13 +861,13 @@ async function send() {
       attempts = 0
       // a 4xx a retry cannot fix: the events are gone, so they are counted
       if (s > 299) lost += batch.length + dropped
-      // a deleted browser starts over, never linked to the deleted history
-      else if (
-        ((await res.json().catch(() => 0)) as { directives?: string[] }).directives?.includes(
-          'rotate_anon_id',
-        )
-      )
-        reset()
+      else {
+        const j = (await res.json().catch(() => 0)) as { directives?: string[]; feedback?: 1 }
+        // a deleted browser starts over, never linked to the deleted history
+        if (j.directives?.includes('rotate_anon_id')) reset()
+        // the project has a live question: the widget asks which ones this browser may see
+        if (j.feedback) widget()
+      }
     }
   } catch {
     wait = -1 // network failure
@@ -971,22 +980,40 @@ function begin(o?: GrantOptions) {
     hook.e = (n, p) => n === '$form_fields' && opt.forms !== false && emit(n, p)
     hook.f = fp
     ;(window as { __datacub?: unknown }).__datacub = hook
-    // on its own: a page whose CSP enforces Trusted Types refuses a plain script URL, and that must
-    // not stop tracking (the module's signals are then simply absent)
-    try {
-      const s = d.createElement('script')
-      s.src = `${endpoint.slice(0, -5)}sdk/insights-${VERSION}.min.js`
-      s.async = true
-      s.referrerPolicy = 'no-referrer'
-      // the module must be the exact file published with this version, wherever it is served from
-      if (__INSIGHTS_SRI__) {
-        s.integrity = __INSIGHTS_SRI__
-        s.crossOrigin = 'anonymous'
-      }
-      s.setAttribute('fetchpriority', 'low')
-      ;(d.head || d.documentElement).append(s)
-    } catch {}
+    // the module must be the exact file published with this version, wherever it is served from
+    load(`sdk/insights-${VERSION}.min.js`, __INSIGHTS_SRI__)
   }
+}
+
+// A module from apiHost, low priority, never blocking the page. On its own: a page whose CSP enforces
+// Trusted Types refuses a plain script URL, and that must not stop tracking (the module is then absent).
+function load(file: string, sri?: string) {
+  try {
+    const s = d.createElement('script')
+    s.src = endpoint.slice(0, -5) + file
+    s.async = true
+    s.referrerPolicy = 'no-referrer'
+    if (sri) {
+      s.integrity = sri
+      s.crossOrigin = 'anonymous'
+    }
+    s.setAttribute('fetchpriority', 'low')
+    ;(d.head || d.documentElement).append(s)
+  } catch {}
+}
+
+// The feedback widget (/v1/feedback.js), only while tracking, once: not when the page already has it
+// (its own script tag, or start() from @datacub/web/feedback). `call` runs once it starts.
+function widget(call?: unknown[]) {
+  if (!feedback || !anon || fbw === 1) return
+  if (call) fbw = call
+  if (!d.querySelector('script[src*="/v1/feedback.js"]')) load('feedback.js')
+}
+// the widget takes over: false when another copy already did
+const claim = () => {
+  const c = fbw
+  fbw = 1
+  return c !== 1 && (c || [])
 }
 
 function grant(o: GrantOptions = {}) {
@@ -1104,6 +1131,15 @@ function start(publicKey: unknown, o: InitOptions = {}) {
   release = typeof o.release === 'string' && !badText(o.release) ? o.release.slice(0, 64) : null
   opt = (o.capture && typeof o.capture === 'object' && o.capture) || {}
   insights = o.insights !== false
+  feedback = o.feedback !== false
+  // a "Send feedback" button clicked before the widget is here
+  on(
+    d,
+    'click',
+    (e) =>
+      (e.target as Element | null)?.closest?.('[data-datacub-feedback]') &&
+      widget(['feedback', []]),
+  )
   F = fetch
   // Global Privacy Control counts as a revoke, as does an earlier revoke.
   gpc = (navigator as { globalPrivacyControl?: boolean }).globalPrivacyControl === true
@@ -1249,9 +1285,12 @@ const datacub: DatacubClient = {
     grant: api(grant),
     revoke: api(revoke),
   },
+  // until the widget starts and replaces them
+  ask: api((...a: unknown[]) => widget(['ask', a])),
+  feedback: api(() => widget(['feedback', []])),
   // the feedback module's way in (src/feedback.ts): who is here and how to send. The ids are
   // empty until grant() and again after revoke()
-  _fb: () => [state, cookies, key, endpoint, anon, user, sid, emit],
+  _fb: () => [state, cookies, key, endpoint, anon, user, sid, emit, claim],
 }
 
 export default datacub

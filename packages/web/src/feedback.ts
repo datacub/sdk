@@ -505,8 +505,13 @@ function busy(): boolean {
 /** Start the widget for this SDK client; the script build calls it with window.datacub. */
 export function start(datacub: Client) {
   if (started || typeof window === 'undefined' || !datacub?._fb) return
-  started = true
   const bridge = datacub._fb
+  // the core loads this widget itself when needed: one widget per page, whichever copy came first,
+  // then the call that loaded it (an older core has no claim)
+  const claim = bridge()[8] as (() => unknown[] | false) | undefined
+  const call = claim ? claim() : []
+  if (!call) return
+  started = true
   let live: Live[] = []
   let look: Look = { accent: '#1f1f1f', position: 'end' }
   let loaded = ''
@@ -741,15 +746,18 @@ export function start(datacub: Client) {
     grant(...a)
     setTimeout(load, 0)
   }
-  datacub.ask = (id: string, o?: { into?: Element | string }) => {
-    const q = live.find((x) => x.id === id && x.q.trigger.kind === 'manual')
-    let into: Element | null = null
-    try {
-      into = typeof o?.into === 'string' ? document.querySelector(o.into) : (o?.into ?? null)
-    } catch {} // an invalid selector must not throw into the page
-    // inline is the developer's own placement: it does not wait for the person to stop typing
-    if (q) void attempt(q, Date.now() + HOLD_MS, into instanceof Element ? into : null)
-  }
+  // a question asked while the first load is on its way waits for it
+  let ready: Promise<void> = Promise.resolve()
+  datacub.ask = (id: string, o?: { into?: Element | string }) =>
+    void ready.then(() => {
+      const q = live.find((x) => x.id === id && x.q.trigger.kind === 'manual')
+      let into: Element | null = null
+      try {
+        into = typeof o?.into === 'string' ? document.querySelector(o.into) : (o?.into ?? null)
+      } catch {} // an invalid selector must not throw into the page
+      // inline is the developer's own placement: it does not wait for the person to stop typing
+      if (q) void attempt(q, Date.now() + HOLD_MS, into instanceof Element ? into : null)
+    })
   datacub.feedback = openGeneral
   document.addEventListener('click', (e) => {
     const t = e.target as Element | null
@@ -781,5 +789,9 @@ export function start(datacub: Client) {
       hide()
     }
   }, 1000)
-  void load()
+  ready = load()
+  // the call made before the widget was here (datacub.feedback(), datacub.ask(), a button click)
+  const [m, a] = call as [string?, unknown[]?]
+  if (m === 'feedback') openGeneral()
+  else if (m === 'ask') datacub.ask(...(a as [string]))
 }
