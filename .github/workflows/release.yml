@@ -126,7 +126,7 @@ jobs:
           for i in $(seq 1 36); do npm view "$NAME@$VERSION" version --prefer-online && break; sleep 10; done # new versions can take minutes to appear
           cd "$(mktemp -d)" && npm init -y >/dev/null
           npm install --ignore-scripts --no-audit "$NAME@$VERSION"
-          npm audit signatures
+          for i in $(seq 1 18); do npm audit signatures && exit 0; sleep 10; done; exit 1 # attestations can lag the version
         env:
           NAME: ${{ steps.state.outputs.name }}
           VERSION: ${{ steps.state.outputs.version }}
