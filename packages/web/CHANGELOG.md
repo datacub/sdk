@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/datacub/sdk/compare/web-v0.4.3...web-v0.5.0) (2026-11-23)
+
+
+### Features
+
+* **web:** load the feedback widget itself, one script tag is enough ([#6](https://github.com/datacub/sdk/issues/6)) ([68a0dde](https://github.com/datacub/sdk/commit/68a0dde65013078b44e90b5b5a828cbd3c8bce83))
+
 ## [0.4.3](https://github.com/datacub/sdk/compare/web-v0.4.2...web-v0.4.3) (2026-11-22)
 
 
