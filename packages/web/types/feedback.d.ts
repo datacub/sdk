@@ -1,3 +1,5 @@
+import type { FeedbackLook } from './index.ts';
+export type { FeedbackLook };
 type Lang = 'ar' | 'en';
 export type CardType = 'choice' | 'thumbs' | 'text' | 'nps' | 'general';
 export interface Card {
@@ -11,10 +13,9 @@ export interface Card {
     followup?: string | null;
     followupOn?: string[] | null;
 }
-export interface Look {
+export interface Look extends FeedbackLook {
     accent: string;
     position: 'end' | 'start';
-    theme?: 'light' | 'dark' | 'auto';
 }
 /** An editor edits the card itself: the same card, with its words as fields. */
 export interface Edit {
@@ -62,6 +63,8 @@ export interface Parts {
 export declare const parts: Partial<Parts>;
 export declare function icon(d: string, box?: number, width?: number): SVGSVGElement;
 export declare function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string): HTMLElementTagNameMap[K];
+/** WCAG contrast ratio of two #rrggbb colours, 1 to 21. */
+export declare const contrast: (a: string, b: string) => number;
 export interface Mounted {
     close(): void;
 }
@@ -81,4 +84,3 @@ export declare function mount(root: ShadowRoot, card: Card, look: Look, o: {
 }): Mounted;
 /** Start the widget for this SDK client; the script build calls it with window.datacub. */
 export declare function start(datacub: Client): void;
-export {};
