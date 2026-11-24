@@ -12,7 +12,14 @@ interface Run {
   plan: { status: number; retryAfter?: number; delay?: number; body?: string }[]
   // feedback.pw.ts: whether batches answer feedback: 1, the questions /v1/feedback offers, and what
   // the widget fetched
-  fb: { hint: boolean; questions: unknown[]; script: number; asks: number; seen: number }
+  fb: {
+    hint: boolean
+    questions: unknown[]
+    script: number
+    asks: number
+    seen: number
+    settings?: Record<string, unknown>
+  }
 }
 const runs = new Map<string, Run>()
 const apps: Record<string, Promise<string>> = {}
@@ -77,7 +84,7 @@ Bun.serve({
         r.fb.asks++
         return Response.json({
           questions: r.fb.questions,
-          settings: { accent: '#1f1f1f', position: 'end', theme: 'light' },
+          settings: r.fb.settings ?? { accent: '#1f1f1f', position: 'end', theme: 'light' },
         })
       }
       if (tail.startsWith('v1/feedback/') && req.method === 'POST') {

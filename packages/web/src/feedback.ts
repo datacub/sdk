@@ -1,10 +1,14 @@
 // @datacub/web/feedback: the feedback widget. Opt-in and loaded apart from
 // the core SDK, so a site without feedback never downloads it. It runs only while the core
-// is tracking (not pending or revoked) and the browser keeps cookies; it never reads the page, and nothing it shows is HTML
+// is tracking (not pending or revoked) and the browser keeps cookies; it never reads the page (only its font, for
+// the look "site"), and nothing it shows is HTML
 // from the server: every string goes in as text. The dashboard's preview renders with `mount`, the
 // same code a visitor sees.
 
+import type { FeedbackLook } from './index.ts'
 import { segment } from './scrub.ts'
+
+export type { FeedbackLook }
 
 type Lang = 'ar' | 'en'
 export type CardType = 'choice' | 'thumbs' | 'text' | 'nps' | 'general'
@@ -17,10 +21,9 @@ export interface Card {
   // the answers that open the follow-up; null: any answer
   followupOn?: string[] | null
 }
-export interface Look {
+export interface Look extends FeedbackLook {
   accent: string
   position: 'end' | 'start'
-  theme?: 'light' | 'dark' | 'auto'
 }
 /** An editor edits the card itself: the same card, with its words as fields. */
 export interface Edit {
@@ -91,29 +94,40 @@ const WORDS = {
 
 const DARK =
   '--bg:#1c1c1f;--fg:#fafafa;--mut:#a1a1aa;--opt:#2a2a2e;--opt-h:#333338;--edge:rgba(255,255,255,.08);--x:#8b8b93;--line:#55555c'
+const SANS = 'system-ui,-apple-system,"Segoe UI","SF Arabic","Noto Sans Arabic",Tahoma,sans-serif'
+const FONTS = {
+  system: SANS,
+  serif: 'ui-serif,Georgia,Cambria,"Times New Roman","Noto Naskh Arabic","Geeza Pro",serif',
+  rounded: `ui-rounded,"SF Pro Rounded",Nunito,"Varela Round",${SANS}`,
+}
+// card corner, inner corner
+const RADII = { none: [0, 0], small: [6, 4], medium: [12, 8], large: [16, 10] }
+// width, text size, padding
+const SIZES = { small: [320, 13, 12], medium: [360, 14, 16], large: [400, 15, 20] }
 const CSS = `
 :host{all:initial}
 *{box-sizing:border-box;margin:0}
 .w{--a:#1f1f1f;--on:#fff;--bg:#fff;--fg:#18181b;--mut:#71717a;--opt:#f4f4f5;--opt-h:#ebebee;--edge:rgba(24,24,27,.07);--x:#a1a1aa;--line:#d4d4d8;
-position:fixed;z-index:2147483000;bottom:16px;right:16px;width:360px;max-width:calc(100vw - 24px);
-font:14px/1.45 system-ui,-apple-system,"Segoe UI","SF Arabic","Noto Sans Arabic",Tahoma,sans-serif;color:var(--fg);-webkit-font-smoothing:antialiased;transition:bottom .2s}
+--ff:${SANS};--fs:14px;--r:16px;--ri:10px;--pad:16px;
+position:fixed;z-index:2147483000;bottom:16px;right:16px;width:var(--wd,360px);max-width:calc(100vw - 24px);
+font-family:var(--ff);font-size:var(--fs);line-height:1.45;color:var(--fg);-webkit-font-smoothing:antialiased;transition:bottom .2s}
 .w.dk{${DARK}}
 @media (prefers-color-scheme:dark){.w.au{${DARK}}}
 .w.s{right:auto;left:16px}
 .w.p{position:relative;inset:auto;bottom:auto;right:auto;left:auto;width:100%}
-.c{position:relative;background:var(--bg);border-radius:16px;padding:16px;box-shadow:0 0 0 1px var(--edge),0 12px 32px -8px rgba(24,24,27,.22),0 2px 6px rgba(24,24,27,.06);
+.c{position:relative;background:var(--bg);border-radius:var(--r);padding:var(--pad);box-shadow:0 0 0 1px var(--edge),0 12px 32px -8px rgba(24,24,27,.22),0 2px 6px rgba(24,24,27,.06);
 animation:in .32s cubic-bezier(.2,.9,.25,1) both;transform-origin:bottom}
 .c.o{animation:out .18s ease-in both}
 .c.q{animation:none}
 @keyframes in{from{opacity:0;transform:translateY(10px) scale(.98)}}
 @keyframes out{to{opacity:0;transform:translateY(6px) scale(.98)}}
-.t{display:block;width:100%;font-family:inherit;font-weight:600;font-size:15px;line-height:1.35;padding:0;padding-inline-end:28px;color:var(--fg);overflow-wrap:anywhere;background:none;border:0;resize:none;min-height:0;max-height:none;box-shadow:none}
-.x{position:absolute;top:10px;inset-inline-end:10px;width:28px;height:28px;border:0;border-radius:8px;background:transparent;color:var(--x);cursor:pointer;display:grid;place-items:center;transition:background .15s,color .15s}
+.t{display:block;width:100%;font-family:inherit;font-weight:600;font-size:calc(var(--fs) + 1px);line-height:1.35;padding:0;padding-inline-end:28px;color:var(--fg);overflow-wrap:anywhere;background:none;border:0;resize:none;min-height:0;max-height:none;box-shadow:none}
+.x{position:absolute;top:10px;inset-inline-end:10px;width:28px;height:28px;border:0;border-radius:var(--ri);background:transparent;color:var(--x);cursor:pointer;display:grid;place-items:center;transition:background .15s,color .15s}
 .x:hover{background:var(--opt);color:var(--fg)}
 button,input{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent}
 button:focus-visible,textarea:focus-visible{outline:2px solid var(--a);outline-offset:2px}
 .g{display:flex;flex-direction:column;gap:6px;margin-top:12px}
-.o1{position:relative;display:flex;align-items:center;gap:10px;min-height:40px;width:100%;padding:8px 12px;border:0;border-radius:10px;background:var(--opt);text-align:start;cursor:pointer;
+.o1{position:relative;display:flex;align-items:center;gap:10px;min-height:40px;width:100%;padding:8px 12px;border:0;border-radius:var(--ri);background:var(--opt);text-align:start;cursor:pointer;
 transition:background .15s,box-shadow .15s,transform .12s}
 .o1:hover{background:var(--opt-h)}
 .o1:active{transform:scale(.985)}
@@ -126,20 +140,20 @@ transition:background .15s,box-shadow .15s,transform .12s}
 .th .o1{justify-content:center;flex:1}
 .th svg{width:20px;height:20px}
 .n{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;margin-top:12px;direction:ltr}
-.n .o1{min-height:36px;padding:0;justify-content:center;font-variant-numeric:tabular-nums;font-size:13px}
+.n .o1{min-height:36px;padding:0;justify-content:center;font-variant-numeric:tabular-nums;font-size:calc(var(--fs) - 1px)}
 .n .o1[aria-pressed=true]{background:var(--a);color:var(--on);box-shadow:none}
 .nl{display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:var(--mut)}
 .f{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s cubic-bezier(.2,.9,.25,1)}
 .f.on{grid-template-rows:1fr}
 .f>div{overflow:hidden;min-height:0}
 .fi{padding-top:12px}
-textarea{display:block;width:100%;min-height:76px;max-height:180px;resize:vertical;padding:10px 12px;border:0;border-radius:10px;background:var(--opt);font:inherit;color:var(--fg);
+textarea{display:block;width:100%;min-height:76px;max-height:180px;resize:vertical;padding:10px 12px;border:0;border-radius:var(--ri);background:var(--opt);font:inherit;color:var(--fg);
 box-shadow:inset 0 0 0 1px transparent;transition:box-shadow .15s,background .15s}
 textarea:focus{background:var(--bg);box-shadow:inset 0 0 0 1.5px var(--a);outline:0}
 textarea::placeholder,input::placeholder{color:var(--x)}
 .r{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}
 .e{font-size:12px;color:#d1453b}
-.b{margin-inline-start:auto;height:34px;padding:0 14px;border:0;border-radius:10px;background:var(--a);color:var(--on);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:opacity .15s,transform .12s}
+.b{margin-inline-start:auto;height:34px;padding:0 14px;border:0;border-radius:var(--ri);background:var(--a);color:var(--on);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:opacity .15s,transform .12s}
 .b:active{transform:scale(.97)}
 .b[disabled]{opacity:.45;cursor:default}
 .b[aria-busy=true]{opacity:.7}
@@ -149,7 +163,7 @@ textarea::placeholder,input::placeholder{color:var(--x)}
 .k svg{flex:none;width:28px;height:28px;color:var(--a)}
 .k path{stroke-dasharray:24;stroke-dashoffset:24;animation:ck .4s .1s ease-out forwards}
 @keyframes ck{to{stroke-dashoffset:0}}
-.k strong{color:var(--fg);font-size:15px;font-weight:600}
+.k strong{color:var(--fg);font-size:calc(var(--fs) + 1px);font-weight:600}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (max-width:480px){.w:not(.p){bottom:max(12px,env(safe-area-inset-bottom));left:12px;right:12px;width:auto;max-width:none}
 .o1{min-height:44px}.n .o1{min-height:40px}}
@@ -215,35 +229,89 @@ function styled(root: ShadowRoot) {
   }
 }
 
+const rgb = (hex: string) =>
+  [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16)) as [number, number, number]
 const luminance = (hex: string) => {
-  const n = Number.parseInt(hex.slice(1), 16)
-  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => {
+  const [r, g, b] = rgb(hex).map((c) => {
     const s = c / 255
     return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
   }) as [number, number, number]
   return 0.2126 * r + 0.7152 * g + 0.0722 * b
 }
-// readable text on the brand colour
-const onColor = (hex: string) => (luminance(hex) > 0.4 ? '#18181b' : '#fff')
+/** WCAG contrast ratio of two #rrggbb colours, 1 to 21. */
+export const contrast = (a: string, b: string) => {
+  const [x, y] = [luminance(a), luminance(b)].sort((m, n) => n - m) as [number, number]
+  return (x + 0.05) / (y + 0.05)
+}
+const INK = '#18181b'
+const PAPER = '#fafafa'
+// the more readable of near-black and white on a colour
+const onColor = (hex: string, light = '#ffffff') =>
+  contrast(hex, light) >= contrast(hex, INK) ? light : INK
+// t of a over b
+const mix = (a: string, b: string, t: number) => {
+  const y = rgb(b)
+  return `#${rgb(a)
+    .map((x, i) =>
+      Math.round(x * t + (y[i] as number) * (1 - t))
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('')}`
+}
+const hex = (v: unknown) => (typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v) ? v : null)
+const word = <T extends object>(m: T, v: unknown, d: keyof T): keyof T =>
+  typeof v === 'string' && Object.hasOwn(m, v) ? (v as keyof T) : d
 
 export interface Mounted {
   close(): void
 }
 
-/** The look on a card or the button: brand colour, corner, theme. */
+/** The look on a card: brand colour, colours, font, corners, size. Values are only ever set as
+ * single CSS properties after a check, never as CSS text. */
 function dress(node: HTMLElement, look: Look) {
-  let accent = /^#[0-9a-f]{6}$/i.test(look.accent) ? look.accent : '#1f1f1f'
+  const set = (k: string, v: string) => node.style.setProperty(k, v)
   const dark =
     look.theme === 'dark' ||
     (look.theme === 'auto' &&
       typeof matchMedia === 'function' &&
       matchMedia('(prefers-color-scheme: dark)').matches)
-  // a near-black brand colour would vanish on a dark card
-  if (dark && luminance(accent) < 0.05) accent = '#fafafa'
-  node.style.setProperty('--a', accent)
-  node.style.setProperty('--on', onColor(accent))
   if (look.theme === 'dark') node.classList.add('dk')
   if (look.theme === 'auto') node.classList.add('au')
+  const own = hex(look.background)
+  const bg = own ?? (dark ? '#1c1c1f' : '#ffffff')
+  let fg = hex(look.text)
+  // text that would be hard to read on the card gives way to the card's own
+  if (fg && contrast(fg, bg) < 4.5) fg = null
+  if (own) {
+    fg ??= onColor(bg, PAPER)
+    set('--bg', bg)
+    set('--mut', mix(fg, bg, 0.62))
+    set('--opt', mix(fg, bg, 0.06))
+    set('--opt-h', mix(fg, bg, 0.1))
+    set('--edge', mix(fg, bg, 0.1))
+    set('--x', mix(fg, bg, 0.45))
+    set('--line', mix(fg, bg, 0.25))
+  }
+  if (fg) set('--fg', fg)
+  let accent = hex(look.accent) ?? '#1f1f1f'
+  // a brand colour that would vanish on the card (near black on dark) becomes the text colour
+  if (contrast(accent, bg) < 1.5) accent = fg ?? (dark ? PAPER : INK)
+  set('--a', accent)
+  set('--on', onColor(accent))
+  const font = word({ ...FONTS, site: 0 }, look.font, 'system')
+  if (font === 'site') {
+    // the page's own font, as the browser computed it: a value, never CSS text
+    const f = typeof getComputedStyle === 'function' && getComputedStyle(document.body).fontFamily
+    if (f) set('--ff', f)
+  } else set('--ff', FONTS[font])
+  const [r, ri] = RADII[word(RADII, look.radius, 'large')]
+  set('--r', `${r}px`)
+  set('--ri', `${ri}px`)
+  const [wd, fs, pad] = SIZES[word(SIZES, look.size, 'medium')]
+  set('--wd', `${wd}px`)
+  set('--fs', `${fs}px`)
+  set('--pad', `${pad}px`)
 }
 
 /**
@@ -569,8 +637,13 @@ export function start(datacub: Client) {
     try {
       const r = await post(m.base, { api_key: m.key, anon_id: m.anon, user_id: m.user })
       live = (r.questions as Live[]) ?? []
-      const s = r.settings as { accent: string; position: 'end' | 'start'; theme?: Look['theme'] }
-      look = { accent: s.accent, position: s.position, theme: s.theme ?? 'light' }
+      // the look set in datacub, then the one in code (init's feedback.look); dress() checks each value
+      const own = bridge()[9]
+      look = {
+        theme: 'light',
+        ...(r.settings as Look),
+        ...(own && typeof own === 'object' ? (own as FeedbackLook) : {}),
+      } as Look
     } catch (e) {
       loaded = ''
       retryAt = /^4/.test((e as Error)?.message)

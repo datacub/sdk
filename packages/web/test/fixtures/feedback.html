@@ -5,13 +5,17 @@
   <input id="field">
   <script>
     // ?run=<id>&consent (data-require-consent) &off (data-feedback="off") &both (an older install:
-    // the feedback.js tag beside the SDK)
+    // the feedback.js tag beside the SDK) &look=<json> (init with feedback.look, no data-id)
     var q = new URLSearchParams(location.search)
     var host = location.origin + '/r/' + q.get('run')
     var s = document.createElement('script')
     s.src = '/datacub.js'
-    s.dataset.id = 'abcd1234'
     s.dataset.apiHost = host
+    if (q.has('look'))
+      s.onload = function () {
+        datacub.init('abcd1234', { apiHost: host, feedback: { look: JSON.parse(q.get('look')) } })
+      }
+    else s.dataset.id = 'abcd1234'
     if (q.has('consent')) s.dataset.requireConsent = ''
     if (q.has('off')) s.dataset.feedback = 'off'
     document.head.appendChild(s)

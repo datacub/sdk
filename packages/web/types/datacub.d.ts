@@ -1,9 +1,30 @@
-// datacub web SDK 0.4.3, for the script tag. Save as datacub.d.ts in your project: `datacub` is then typed.
-export declare const VERSION = "0.4.3";
+// datacub web SDK 0.5.0, for the script tag. Save as datacub.d.ts in your project: `datacub` is then typed.
+export declare const VERSION = "0.5.0";
 export type Property = string | number | boolean | null | Date | Property[] | {
     [key: string]: Property;
 };
 export type Properties = Record<string, Property>;
+/**
+ * How the card looks: set in datacub (Feedback, Appearance), or in code with
+ * `datacub.init(id, { feedback: { look } })`, which wins. Every value is checked; one that is not a
+ * known word or a #rrggbb colour is ignored, and colours that would be hard to read are replaced.
+ */
+export interface FeedbackLook {
+    /** the brand colour: buttons, the chosen answer, focus rings. #rrggbb */
+    accent?: string;
+    /** the bottom corner: 'end' right, 'start' left */
+    position?: 'end' | 'start';
+    /** 'auto' follows the visitor's system */
+    theme?: 'light' | 'dark' | 'auto';
+    /** 'site' uses the page's own font */
+    font?: 'system' | 'site' | 'serif' | 'rounded';
+    radius?: 'none' | 'small' | 'medium' | 'large';
+    size?: 'small' | 'medium' | 'large';
+    /** card colour, in place of the theme's. #rrggbb */
+    background?: string | null;
+    /** text colour; ignored when it does not read well on the card. #rrggbb */
+    text?: string | null;
+}
 export interface InitOptions {
     /** Ingestion origin or first-party proxy path. Default https://in.datacub.to */
     apiHost?: string;
@@ -29,9 +50,12 @@ export interface InitOptions {
     /**
      * The feedback widget, loaded from apiHost only when the project has a live question or the page
      * opens the "Send feedback" card, and only while tracking. Default true; false never loads it
-     * (data-feedback="off" on the script tag).
+     * (data-feedback="off" on the script tag). `{ look }` styles the card in code, over the look set
+     * in datacub: `{ look: { theme: 'dark', font: 'site', radius: 'small' } }`.
      */
-    feedback?: boolean;
+    feedback?: boolean | {
+        look?: FeedbackLook;
+    };
     /** Turn kinds of capture off on this site. The project's settings in datacub can turn them off too. */
     capture?: Capture;
 }

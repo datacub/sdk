@@ -15,7 +15,14 @@ const QUESTION = {
   },
 }
 
-type Fb = { hint: boolean; questions: unknown[]; script: number; asks: number; seen: number }
+type Fb = {
+  hint: boolean
+  questions: unknown[]
+  script: number
+  asks: number
+  seen: number
+  settings?: Record<string, unknown>
+}
 const fb = async (page: Page, run: string) =>
   ((await (await page.request.get(`/r/${run}/log`)).json()) as { fb: Fb }).fb
 const setup = (page: Page, run: string, o: Partial<Fb>) =>
@@ -117,4 +124,64 @@ test('datacub.ask() before the widget is here: it loads, waits for the questions
   await page.evaluate((id) => window.datacub.ask?.(id), manual.id)
   await expect(widgets(page).locator('.t')).toHaveText(QUESTION.q.title)
   expect((await fb(page, run)).script).toBe(1)
+})
+
+const card = (page: Page) => widgets(page).locator('.w')
+const vars = (page: Page, ...k: string[]) =>
+  card(page).evaluate((w, k) => k.map((x) => (w as HTMLElement).style.getPropertyValue(x)), k)
+
+test('the look from datacub styles the card; values it does not know are ignored', async ({
+  page,
+}) => {
+  const run = newRun()
+  await setup(page, run, {
+    hint: true,
+    questions: [QUESTION],
+    settings: {
+      accent: '#2563eb',
+      position: 'start',
+      theme: 'light',
+      font: 'serif',
+      radius: 'small',
+      size: 'large',
+      background: '#102a43',
+      // too dark to read on that card: datacub picks the readable text colour
+      text: '#000000',
+    },
+  })
+  await page.goto(`/feedback.html?run=${run}`)
+  await expect(card(page)).toHaveCount(1)
+  expect(await vars(page, '--a', '--bg', '--fg', '--r', '--ri', '--wd')).toEqual([
+    '#2563eb',
+    '#102a43',
+    '#fafafa',
+    '6px',
+    '4px',
+    '400px',
+  ])
+  expect(await vars(page, '--ff')).toEqual([expect.stringContaining('Georgia')])
+  await expect(card(page)).toHaveClass(/\bs\b/)
+  expect(
+    await card(page)
+      .locator('.c')
+      .evaluate((c) => getComputedStyle(c).borderRadius),
+  ).toBe('6px')
+})
+
+test('feedback.look in init wins over datacub; a bad value is dropped, not used', async ({
+  page,
+}) => {
+  const run = newRun()
+  await setup(page, run, {
+    hint: true,
+    questions: [QUESTION],
+    settings: { accent: '#2563eb', position: 'end', theme: 'light', radius: 'large' },
+  })
+  const look = { theme: 'dark', radius: 'none', accent: 'red;background:url(x)', font: 'comic' }
+  await page.goto(`/feedback.html?run=${run}&look=${encodeURIComponent(JSON.stringify(look))}`)
+  await expect(card(page)).toHaveCount(1)
+  await expect(card(page)).toHaveClass(/\bdk\b/)
+  // the bad accent falls back to datacub's near black, which turns light on a dark card
+  expect(await vars(page, '--a', '--r')).toEqual(['#fafafa', '0px'])
+  expect(await vars(page, '--ff')).toEqual([expect.stringContaining('system-ui')])
 })
