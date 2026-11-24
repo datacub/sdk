@@ -147,7 +147,7 @@ transition:background .15s,box-shadow .15s,transform .12s}
 .n .o1{min-height:36px;padding:0;justify-content:center;font-variant-numeric:tabular-nums;font-size:calc(var(--fs) - 1px)}
 .n .o1[aria-pressed=true]{background:var(--sel);color:var(--son);box-shadow:none}
 .tr .n .o1:nth-child(-n+7){--opt:var(--lo)}.tr .n .o1:nth-child(n+8){--opt:var(--mi)}.tr .n .o1:nth-child(n+10){--opt:var(--hi)}
-.nl{display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:var(--mut)}
+.nl{display:flex;justify-content:space-between;direction:ltr;margin-top:6px;font-size:12px;color:var(--mut)}
 .f{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s cubic-bezier(.2,.9,.25,1)}
 .f.on{grid-template-rows:1fr}
 .f>div{overflow:hidden;min-height:0}
