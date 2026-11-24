@@ -18,6 +18,7 @@ export interface FeedbackLook {
     theme?: 'light' | 'dark' | 'auto';
     /** 'site' uses the page's own font */
     font?: 'system' | 'site' | 'serif' | 'rounded';
+    /** default 'medium' */
     radius?: 'none' | 'small' | 'medium' | 'large';
     size?: 'small' | 'medium' | 'large';
     /** card colour, in place of the theme's. #rrggbb */
@@ -40,6 +41,7 @@ export interface FeedbackLook {
     /** the card's edge colour and width, 0 to 4 px. #rrggbb */
     border?: string | null;
     borderWidth?: number | null;
+    /** default 'soft': a faint one */
     shadow?: 'none' | 'soft' | 'medium' | 'strong';
     /** card width, 280 to 480 px, in place of the size's */
     width?: number | null;

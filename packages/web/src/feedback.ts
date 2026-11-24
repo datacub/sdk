@@ -93,7 +93,7 @@ const WORDS = {
 }
 
 const DARK =
-  '--bg:#1c1c1f;--fg:#fafafa;--mut:#a1a1aa;--opt:#2a2a2e;--opt-h:#333338;--edge:rgba(255,255,255,.08);--x:#8b8b93;--line:#55555c'
+  '--bg:#1c1c1f;--fg:#fafafa;--mut:#a1a1aa;--opt:#2a2a2e;--opt-h:#333338;--edge:#2e2e33;--x:#8b8b93;--line:#55555c'
 const SANS = 'system-ui,-apple-system,"Segoe UI","SF Arabic","Noto Sans Arabic",Tahoma,sans-serif'
 const FONTS = {
   system: SANS,
@@ -107,8 +107,8 @@ const SIZES = { small: [320, 13, 12], medium: [360, 14, 16], large: [400, 15, 20
 const CSS = `
 :host{all:initial}
 *{box-sizing:border-box;margin:0}
-.w{--a:#1f1f1f;--on:#fff;--bg:#fff;--fg:#18181b;--mut:#71717a;--opt:#f4f4f5;--opt-h:#ebebee;--edge:rgba(24,24,27,.07);--x:#a1a1aa;--line:#d4d4d8;
---ff:${SANS};--fs:14px;--r:16px;--ri:10px;--pad:16px;--gap:6px;--mt:12px;--sx:24px;
+.w{--a:#1f1f1f;--on:#fff;--bg:#fff;--fg:#18181b;--mut:#71717a;--opt:#f4f4f5;--opt-h:#ebebee;--edge:#e4e4e7;--x:#a1a1aa;--line:#d4d4d8;
+--ff:${SANS};--fs:14px;--r:12px;--ri:8px;--pad:16px;--gap:6px;--mt:12px;--sx:24px;
 --tc:var(--fg);--xc:var(--x);--ot:inherit;--ob:transparent;--sel:var(--a);--son:var(--on);--btn:var(--a);--bt:var(--on);
 position:fixed;z-index:var(--z,2147483000);bottom:var(--oy,16px);right:var(--ox,16px);width:var(--wd,360px);max-width:calc(100vw - 24px);
 font-family:var(--ff);font-size:var(--fs);font-weight:var(--fw,400);line-height:1.45;color:var(--fg);-webkit-font-smoothing:antialiased;transition:bottom .2s}
@@ -116,7 +116,7 @@ font-family:var(--ff);font-size:var(--fs);font-weight:var(--fw,400);line-height:
 @media (prefers-color-scheme:dark){.w.au{${DARK}}}
 .w.s{right:auto;left:var(--ox,16px);--sx:-24px}
 .w.p{position:relative;inset:auto;bottom:auto;right:auto;left:auto;width:100%}
-.c{position:relative;background:var(--bg);border-radius:var(--r);padding:var(--pad);box-shadow:0 0 0 var(--bw,1px) var(--edge),var(--sh,0 12px 32px -8px rgba(24,24,27,.22),0 2px 6px rgba(24,24,27,.06));
+.c{position:relative;background:var(--bg);border-radius:var(--r);padding:var(--pad);box-shadow:0 0 0 var(--bw,1px) var(--edge),var(--sh,0 1px 3px rgba(24,24,27,.06));
 animation:in .32s cubic-bezier(.2,.9,.25,1) both;transform-origin:bottom}
 .af .c{animation-name:fd}.al .c{animation-name:sl}.a0 .c{animation:none}
 @keyframes fd{from{opacity:0}}
@@ -299,8 +299,8 @@ const COLORS = [
 ] as const
 const SHADOWS = {
   none: 'none',
-  soft: '0 4px 14px -6px rgba(24,24,27,.16)',
-  medium: '',
+  soft: '',
+  medium: '0 12px 32px -8px rgba(24,24,27,.22),0 2px 6px rgba(24,24,27,.06)',
   strong: '0 24px 48px -12px rgba(24,24,27,.38),0 4px 10px rgba(24,24,27,.1)',
 }
 // padding change, gap, space above answers
@@ -374,7 +374,7 @@ function dress(node: HTMLElement, look: Look) {
   if (c.border) set('--edge', c.border)
   const bw = px(look.borderWidth, 0, 4)
   if (bw !== null) set('--bw', `${bw}px`)
-  const sh = SHADOWS[word(SHADOWS, look.shadow, 'medium')]
+  const sh = SHADOWS[word(SHADOWS, look.shadow, 'soft')]
   if (sh) set('--sh', sh)
   const font = word({ ...FONTS, site: 0, custom: 0 }, look.font, 'system')
   const name = typeof look.fontName === 'string' && /^[\p{L}\p{N} -]{1,40}$/u.test(look.fontName)
@@ -384,7 +384,7 @@ function dress(node: HTMLElement, look: Look) {
     if (f) set('--ff', f)
   } else if (font === 'custom') set('--ff', name ? `"${look.fontName}",${SANS}` : SANS)
   else set('--ff', FONTS[font])
-  const [r, ri] = RADII[word(RADII, look.radius, 'large')]
+  const [r, ri] = RADII[word(RADII, look.radius, 'medium')]
   set('--r', `${r}px`)
   set('--ri', `${ri}px`)
   const [wd, fs, pad] = SIZES[word(SIZES, look.size, 'medium')]
