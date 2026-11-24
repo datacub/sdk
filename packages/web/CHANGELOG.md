@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/datacub/sdk/compare/web-v0.5.0...web-v0.6.0) (2026-11-24)
+
+
+### Features
+
+* **web:** feedback card look: font, corners, size, card and text colours, and feedback.look in init ([#8](https://github.com/datacub/sdk/issues/8)) ([466ee22](https://github.com/datacub/sdk/commit/466ee226c3081246e6afd075e67ba0917e5ea22c))
+
 ## [0.5.0](https://github.com/datacub/sdk/compare/web-v0.4.3...web-v0.5.0) (2026-11-23)
 
 
