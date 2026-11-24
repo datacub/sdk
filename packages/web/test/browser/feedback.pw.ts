@@ -183,7 +183,30 @@ test('feedback.look in init wins over datacub; a bad value is dropped, not used'
   await expect(card(page)).toHaveClass(/\bdk\b/)
   // the bad accent falls back to datacub's near black, which turns light on a dark card
   expect(await vars(page, '--a', '--r')).toEqual(['#fafafa', '0px'])
-  expect(await vars(page, '--ff')).toEqual([expect.stringContaining('system-ui')])
+  // an unknown font falls back to the default, the page's own font as the browser computed it
+  const body = await page.evaluate(() => getComputedStyle(document.body).fontFamily)
+  expect(await vars(page, '--ff')).toEqual([body])
+})
+
+test('the send button: their own words as text, the default when too long or not text', async ({
+  page,
+}) => {
+  const run = newRun()
+  await setup(page, run, {
+    hint: true,
+    questions: [{ ...QUESTION, q: { ...QUESTION.q, type: 'text' } }],
+    settings: { accent: '#2563eb', sendLabel: '<b>Go</b>' },
+  })
+  await page.goto(`/feedback.html?run=${run}`)
+  await expect(card(page)).toHaveCount(1)
+  const send = card(page).locator('.b')
+  await expect(send).toHaveText('<b>Go</b>')
+  await expect(send.locator('b')).toHaveCount(0)
+  // disabled until they type, still in their colour
+  expect(await send.evaluate((b) => getComputedStyle(b).backgroundColor)).toBe('rgb(37, 99, 235)')
+  const long = { sendLabel: 'x'.repeat(21) }
+  await page.goto(`/feedback.html?run=${run}&look=${encodeURIComponent(JSON.stringify(long))}`)
+  await expect(card(page).locator('.b')).toHaveText('Send')
 })
 
 test('the full look: colours per part, shape, type, icons, placement; out of range values are dropped', async ({

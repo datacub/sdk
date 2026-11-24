@@ -42,8 +42,8 @@ export interface FeedbackLook {
   position?: 'end' | 'start'
   /** 'auto' follows the visitor's system */
   theme?: 'light' | 'dark' | 'auto'
-  /** 'site' uses the page's own font */
-  font?: 'system' | 'site' | 'serif' | 'rounded'
+  /** 'site' (the default) reads the page's own font, as the browser computed it for the body */
+  font?: 'system' | 'site' | 'serif' | 'rounded' | 'custom'
   /** default 'medium' */
   radius?: 'none' | 'small' | 'medium' | 'large'
   size?: 'small' | 'medium' | 'large'
@@ -51,6 +51,8 @@ export interface FeedbackLook {
   background?: string | null
   /** text colour; ignored when it does not read well on the card. #rrggbb */
   text?: string | null
+  /** the send button's words in place of Send / إرسال: plain text, 1 to 20 characters */
+  sendLabel?: string | null
   /** the question's colour. #rrggbb */
   title?: string | null
   /** answer buttons: fill, words, edge. #rrggbb */

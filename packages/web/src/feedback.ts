@@ -160,7 +160,7 @@ textarea::placeholder,input::placeholder{color:var(--x)}
 .e{font-size:12px;color:#d1453b}
 .b{margin-inline-start:auto;height:34px;padding:0 14px;border:0;border-radius:var(--ri);background:var(--btn);color:var(--bt);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:opacity .15s,transform .12s}
 .b:active{transform:scale(.97)}
-.b[disabled]{opacity:.45;cursor:default}
+.b[disabled]{opacity:.6;cursor:default}
 .b[aria-busy=true]{opacity:.7}
 .sp{width:14px;height:14px;border-radius:50%;border:2px solid currentColor;border-inline-end-color:transparent;animation:sp .7s linear infinite}
 @keyframes sp{to{transform:rotate(1turn)}}
@@ -376,7 +376,7 @@ function dress(node: HTMLElement, look: Look) {
   if (bw !== null) set('--bw', `${bw}px`)
   const sh = SHADOWS[word(SHADOWS, look.shadow, 'soft')]
   if (sh) set('--sh', sh)
-  const font = word({ ...FONTS, site: 0, custom: 0 }, look.font, 'system')
+  const font = word({ ...FONTS, site: 0, custom: 0 }, look.font, 'site')
   const name = typeof look.fontName === 'string' && /^[\p{L}\p{N} -]{1,40}$/u.test(look.fontName)
   if (font === 'site') {
     // the page's own font, as the browser computed it: a value, never CSS text
@@ -437,6 +437,10 @@ export function mount(
 ): Mounted {
   styled(root)
   const w = WORDS[card.lang] ?? WORDS.en
+  // their own words on the send button: plain text, at most 20 characters, no control characters
+  const own = typeof look.sendLabel === 'string' ? look.sendLabel.trim() : ''
+  const sendWord =
+    own && own.length <= 20 && !/[\p{Cc}\u202a-\u202e\u2066-\u2069]/u.test(own) ? own : w.send
   const ed = o.edit
   const wrap = el(
     'div',
@@ -497,7 +501,7 @@ export function mount(
   const row = el('div', 'r')
   const err = el('span', 'e')
   err.setAttribute('role', 'status')
-  const sendBtn = el('button', 'b', w.send)
+  const sendBtn = el('button', 'b', sendWord)
   sendBtn.type = 'button'
   row.append(err, sendBtn)
   if (ed && card.followup != null && card.type !== 'text') {
@@ -535,7 +539,7 @@ export function mount(
     } catch {
       sent = false
       sendBtn.removeAttribute('aria-busy')
-      sendBtn.textContent = w.send
+      sendBtn.textContent = sendWord
       err.textContent = w.failed
       return
     }
