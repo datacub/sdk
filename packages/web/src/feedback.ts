@@ -5,7 +5,7 @@
 // from the server: every string goes in as text. The dashboard's preview renders with `mount`, the
 // same code a visitor sees.
 
-import type { FeedbackLook } from './index.ts'
+import type { FeedbackColors, FeedbackLook } from './index.ts'
 import { segment } from './scrub.ts'
 
 export type { FeedbackLook }
@@ -93,7 +93,7 @@ const WORDS = {
 }
 
 const DARK =
-  '--bg:#1c1c1f;--fg:#fafafa;--mut:#a1a1aa;--opt:#2a2a2e;--opt-h:#333338;--edge:rgba(255,255,255,.08);--x:#8b8b93;--line:#55555c'
+  '--bg:#1c1c1f;--fg:#fafafa;--mut:#a1a1aa;--opt:#2a2a2e;--opt-h:#333338;--edge:#2e2e33;--x:#8b8b93;--line:#55555c'
 const SANS = 'system-ui,-apple-system,"Segoe UI","SF Arabic","Noto Sans Arabic",Tahoma,sans-serif'
 const FONTS = {
   system: SANS,
@@ -103,59 +103,64 @@ const FONTS = {
 // card corner, inner corner
 const RADII = { none: [0, 0], small: [6, 4], medium: [12, 8], large: [16, 10] }
 // width, text size, padding
-const SIZES = { small: [320, 13, 12], medium: [360, 14, 16], large: [400, 15, 20] }
+const SIZES = { small: [320, 13, 12], medium: [360, 14, 16], large: [400, 15, 20] } as const
 const CSS = `
 :host{all:initial}
 *{box-sizing:border-box;margin:0}
-.w{--a:#1f1f1f;--on:#fff;--bg:#fff;--fg:#18181b;--mut:#71717a;--opt:#f4f4f5;--opt-h:#ebebee;--edge:rgba(24,24,27,.07);--x:#a1a1aa;--line:#d4d4d8;
---ff:${SANS};--fs:14px;--r:16px;--ri:10px;--pad:16px;
-position:fixed;z-index:2147483000;bottom:16px;right:16px;width:var(--wd,360px);max-width:calc(100vw - 24px);
-font-family:var(--ff);font-size:var(--fs);line-height:1.45;color:var(--fg);-webkit-font-smoothing:antialiased;transition:bottom .2s}
+.w{--a:#1f1f1f;--on:#fff;--bg:#fff;--fg:#18181b;--mut:#71717a;--opt:#f4f4f5;--opt-h:#ebebee;--edge:#e4e4e7;--x:#a1a1aa;--line:#d4d4d8;
+--ff:${SANS};--fs:14px;--r:12px;--ri:8px;--pad:16px;--gap:6px;--mt:12px;--sx:24px;
+--tc:var(--fg);--xc:var(--x);--ot:inherit;--ob:transparent;--sel:var(--a);--son:var(--on);--btn:var(--a);--bt:var(--on);
+position:fixed;z-index:var(--z,2147483000);bottom:var(--oy,16px);right:var(--ox,16px);width:var(--wd,360px);max-width:calc(100vw - 24px);
+font-family:var(--ff);font-size:var(--fs);font-weight:var(--fw,400);line-height:1.45;color:var(--fg);-webkit-font-smoothing:antialiased;transition:bottom .2s}
 .w.dk{${DARK}}
 @media (prefers-color-scheme:dark){.w.au{${DARK}}}
-.w.s{right:auto;left:16px}
+.w.s{right:auto;left:var(--ox,16px);--sx:-24px}
 .w.p{position:relative;inset:auto;bottom:auto;right:auto;left:auto;width:100%}
-.c{position:relative;background:var(--bg);border-radius:var(--r);padding:var(--pad);box-shadow:0 0 0 1px var(--edge),0 12px 32px -8px rgba(24,24,27,.22),0 2px 6px rgba(24,24,27,.06);
+.c{position:relative;background:var(--bg);border-radius:var(--r);padding:var(--pad);box-shadow:0 0 0 var(--bw,1px) var(--edge),var(--sh,0 1px 3px rgba(24,24,27,.06));
 animation:in .32s cubic-bezier(.2,.9,.25,1) both;transform-origin:bottom}
+.af .c{animation-name:fd}.al .c{animation-name:sl}.a0 .c{animation:none}
+@keyframes fd{from{opacity:0}}
+@keyframes sl{from{opacity:0;transform:translateX(var(--sx))}}
 .c.o{animation:out .18s ease-in both}
 .c.q{animation:none}
 @keyframes in{from{opacity:0;transform:translateY(10px) scale(.98)}}
 @keyframes out{to{opacity:0;transform:translateY(6px) scale(.98)}}
-.t{display:block;width:100%;font-family:inherit;font-weight:600;font-size:calc(var(--fs) + 1px);line-height:1.35;padding:0;padding-inline-end:28px;color:var(--fg);overflow-wrap:anywhere;background:none;border:0;resize:none;min-height:0;max-height:none;box-shadow:none}
-.x{position:absolute;top:10px;inset-inline-end:10px;width:28px;height:28px;border:0;border-radius:var(--ri);background:transparent;color:var(--x);cursor:pointer;display:grid;place-items:center;transition:background .15s,color .15s}
+.t{display:block;width:100%;font-family:inherit;font-weight:var(--tw,600);font-size:calc(var(--fs) + var(--ts,1px));line-height:1.35;padding:0;padding-inline-end:28px;color:var(--tc);overflow-wrap:anywhere;background:none;border:0;resize:none;min-height:0;max-height:none;box-shadow:none}
+.x{position:absolute;top:10px;inset-inline-end:10px;width:28px;height:28px;border:0;border-radius:var(--ri);background:transparent;color:var(--xc);cursor:pointer;display:grid;place-items:center;transition:background .15s,color .15s}
 .x:hover{background:var(--opt);color:var(--fg)}
 button,input{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent}
 button:focus-visible,textarea:focus-visible{outline:2px solid var(--a);outline-offset:2px}
-.g{display:flex;flex-direction:column;gap:6px;margin-top:12px}
-.o1{position:relative;display:flex;align-items:center;gap:10px;min-height:40px;width:100%;padding:8px 12px;border:0;border-radius:var(--ri);background:var(--opt);text-align:start;cursor:pointer;
+.g{display:flex;flex-direction:column;gap:var(--gap);margin-top:var(--mt)}
+.o1{position:relative;display:flex;align-items:center;gap:10px;min-height:40px;width:100%;padding:8px 12px;border:0;border-radius:var(--ri);background:var(--opt);color:var(--ot);box-shadow:inset 0 0 0 1px var(--ob);text-align:start;cursor:pointer;
 transition:background .15s,box-shadow .15s,transform .12s}
 .o1:hover{background:var(--opt-h)}
 .o1:active{transform:scale(.985)}
-.o1[aria-pressed=true]{background:var(--bg);box-shadow:inset 0 0 0 1.5px var(--a)}
+.o1[aria-pressed=true]{background:var(--bg);box-shadow:inset 0 0 0 1.5px var(--sel)}
 .d{flex:none;width:16px;height:16px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--line);display:grid;place-items:center;transition:box-shadow .15s,background .15s}
-.o1[aria-pressed=true] .d{background:var(--a);box-shadow:none}
-.d svg{width:10px;height:10px;color:var(--on);transform:scale(0);transition:transform .2s cubic-bezier(.3,1.6,.5,1)}
+.o1[aria-pressed=true] .d{background:var(--sel);box-shadow:none}
+.d svg{width:10px;height:10px;color:var(--son);transform:scale(0);transition:transform .2s cubic-bezier(.3,1.6,.5,1)}
 .o1[aria-pressed=true] .d svg{transform:scale(1)}
-.th{display:flex;gap:8px;margin-top:12px}
+.th{display:flex;gap:8px;margin-top:var(--mt)}
 .th .o1{justify-content:center;flex:1}
-.th svg{width:20px;height:20px}
-.n{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;margin-top:12px;direction:ltr}
+.th svg{width:20px;height:20px}.em{font-size:20px;line-height:1}
+.n{display:grid;grid-template-columns:repeat(11,1fr);gap:4px;margin-top:var(--mt);direction:ltr}
 .n .o1{min-height:36px;padding:0;justify-content:center;font-variant-numeric:tabular-nums;font-size:calc(var(--fs) - 1px)}
-.n .o1[aria-pressed=true]{background:var(--a);color:var(--on);box-shadow:none}
-.nl{display:flex;justify-content:space-between;margin-top:6px;font-size:12px;color:var(--mut)}
+.n .o1[aria-pressed=true]{background:var(--sel);color:var(--son);box-shadow:none}
+.tr .n .o1:nth-child(-n+7){--opt:var(--lo)}.tr .n .o1:nth-child(n+8){--opt:var(--mi)}.tr .n .o1:nth-child(n+10){--opt:var(--hi)}
+.nl{display:flex;justify-content:space-between;direction:ltr;margin-top:6px;font-size:12px;color:var(--mut)}
 .f{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s cubic-bezier(.2,.9,.25,1)}
 .f.on{grid-template-rows:1fr}
 .f>div{overflow:hidden;min-height:0}
-.fi{padding-top:12px}
+.fi{padding-top:var(--mt)}
 textarea{display:block;width:100%;min-height:76px;max-height:180px;resize:vertical;padding:10px 12px;border:0;border-radius:var(--ri);background:var(--opt);font:inherit;color:var(--fg);
 box-shadow:inset 0 0 0 1px transparent;transition:box-shadow .15s,background .15s}
 textarea:focus{background:var(--bg);box-shadow:inset 0 0 0 1.5px var(--a);outline:0}
 textarea::placeholder,input::placeholder{color:var(--x)}
 .r{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}
 .e{font-size:12px;color:#d1453b}
-.b{margin-inline-start:auto;height:34px;padding:0 14px;border:0;border-radius:var(--ri);background:var(--a);color:var(--on);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:opacity .15s,transform .12s}
+.b{margin-inline-start:auto;height:34px;padding:0 14px;border:0;border-radius:var(--ri);background:var(--btn);color:var(--bt);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:opacity .15s,transform .12s}
 .b:active{transform:scale(.97)}
-.b[disabled]{opacity:.45;cursor:default}
+.b[disabled]{opacity:.6;cursor:default}
 .b[aria-busy=true]{opacity:.7}
 .sp{width:14px;height:14px;border-radius:50%;border:2px solid currentColor;border-inline-end-color:transparent;animation:sp .7s linear infinite}
 @keyframes sp{to{transform:rotate(1turn)}}
@@ -163,9 +168,10 @@ textarea::placeholder,input::placeholder{color:var(--x)}
 .k svg{flex:none;width:28px;height:28px;color:var(--a)}
 .k path{stroke-dasharray:24;stroke-dashoffset:24;animation:ck .4s .1s ease-out forwards}
 @keyframes ck{to{stroke-dashoffset:0}}
-.k strong{color:var(--fg);font-size:calc(var(--fs) + 1px);font-weight:600}
+.k strong{color:var(--tc);font-size:calc(var(--fs) + 1px);font-weight:600}
+.ce .t{text-align:center;padding-inline:28px}.ce .k{justify-content:center}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-@media (max-width:480px){.w:not(.p){bottom:max(12px,env(safe-area-inset-bottom));left:12px;right:12px;width:auto;max-width:none}
+@media (max-width:480px){.w:not(.p){bottom:max(var(--oy,12px),env(safe-area-inset-bottom));left:12px;right:12px;width:auto;max-width:none}
 .o1{min-height:44px}.n .o1{min-height:40px}}
 @media (prefers-reduced-motion:reduce){*,.c,.k{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 `
@@ -178,6 +184,15 @@ export const ICONS = {
   up: 'M7 10v10H4V10h3zm0 0l4-7c1.3 0 2.2 1.1 2 2.4L12.4 9H18a2 2 0 0 1 2 2.3l-1.2 6.9A2 2 0 0 1 16.8 20H7',
   down: 'M17 14V4h3v10h-3zm0 0l-4 7c-1.3 0-2.2-1.1-2-2.4l.6-3.6H6a2 2 0 0 1-2-2.3l1.2-6.9A2 2 0 0 1 7.2 4H17',
 }
+
+// the yes and no buttons: thumbs, faces, or (no path) emoji and words
+const FACE = 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM9 9.5v.5M15 9.5v.5'
+const THUMBS = {
+  thumbs: [ICONS.up, ICONS.down],
+  faces: [`${FACE}M8.5 14s1.3 2 3.5 2 3.5-2 3.5-2`, `${FACE}M8.5 16.5s1.3-2 3.5-2 3.5 2 3.5 2`],
+  emoji: [],
+  words: [],
+} as const
 
 // The editing parts, filled in by an editor that imports this module. The visitor build
 // (feedback.js) never loads them, so a page that only shows questions does not download an editor.
@@ -267,22 +282,59 @@ export interface Mounted {
   close(): void
 }
 
+// the colours a look can set, with a dark mode version for theme 'auto'
+const COLORS = [
+  'accent',
+  'background',
+  'text',
+  'title',
+  'option',
+  'optionText',
+  'optionBorder',
+  'selected',
+  'button',
+  'buttonText',
+  'close',
+  'border',
+] as const
+const SHADOWS = {
+  none: 'none',
+  soft: '',
+  medium: '0 12px 32px -8px rgba(24,24,27,.22),0 2px 6px rgba(24,24,27,.06)',
+  strong: '0 24px 48px -12px rgba(24,24,27,.38),0 4px 10px rgba(24,24,27,.1)',
+}
+// padding change, gap, space above answers
+const DENSITY = { compact: [-4, 4, 8], regular: [0, 6, 12], roomy: [4, 8, 16] } as const
+const TITLE = { small: 0, regular: 1, large: 4 }
+const WEIGHT = { regular: 400, medium: 500, semibold: 600, bold: 700 }
+const LAYER = { top: 2147483000, high: 99999, normal: 999 }
+const ANIM = { rise: '', fade: 'af', slide: 'al', none: 'a0' }
+const px = (v: unknown, lo: number, hi: number) =>
+  typeof v === 'number' && Number.isInteger(v) && v >= lo && v <= hi ? v : null
+
 /** The look on a card: brand colour, colours, font, corners, size. Values are only ever set as
  * single CSS properties after a check, never as CSS text. */
 function dress(node: HTMLElement, look: Look) {
-  const set = (k: string, v: string) => node.style.setProperty(k, v)
+  const set = (k: string, v: string | number) => node.style.setProperty(k, String(v))
+  const add = (c: string) => c && node.classList.add(c)
   const dark =
     look.theme === 'dark' ||
     (look.theme === 'auto' &&
       typeof matchMedia === 'function' &&
       matchMedia('(prefers-color-scheme: dark)').matches)
-  if (look.theme === 'dark') node.classList.add('dk')
-  if (look.theme === 'auto') node.classList.add('au')
-  const own = hex(look.background)
+  if (look.theme === 'dark') add('dk')
+  if (look.theme === 'auto') add('au')
+  // theme 'auto' in dark mode takes the dark colours; the others are for light mode
+  const src: FeedbackColors = (look.theme === 'auto' && dark ? look.dark : look) ?? {}
+  const c = Object.fromEntries(COLORS.map((k) => [k, hex(src[k])])) as Record<
+    (typeof COLORS)[number],
+    string | null
+  >
+  // a colour that would be hard to read on what it sits on gives way to the card's own
+  const ok = (a: string | null, b: string, min = 4.5) => (a && contrast(a, b) >= min ? a : null)
+  const own = c.background
   const bg = own ?? (dark ? '#1c1c1f' : '#ffffff')
-  let fg = hex(look.text)
-  // text that would be hard to read on the card gives way to the card's own
-  if (fg && contrast(fg, bg) < 4.5) fg = null
+  let fg = ok(c.text, bg)
   if (own) {
     fg ??= onColor(bg, PAPER)
     set('--bg', bg)
@@ -294,24 +346,70 @@ function dress(node: HTMLElement, look: Look) {
     set('--line', mix(fg, bg, 0.25))
   }
   if (fg) set('--fg', fg)
-  let accent = hex(look.accent) ?? '#1f1f1f'
+  const ink = fg ?? (dark ? PAPER : INK)
+  // the brand colour carries over to dark mode unless it has its own
+  let accent = c.accent ?? hex(look.accent) ?? '#1f1f1f'
   // a brand colour that would vanish on the card (near black on dark) becomes the text colour
-  if (contrast(accent, bg) < 1.5) accent = fg ?? (dark ? PAPER : INK)
+  if (contrast(accent, bg) < 1.5) accent = ink
   set('--a', accent)
   set('--on', onColor(accent))
-  const font = word({ ...FONTS, site: 0 }, look.font, 'system')
+  const title = ok(c.title, bg, 3)
+  if (title) set('--tc', title)
+  const close = ok(c.close, bg, 3)
+  if (close) set('--xc', close)
+  const opt = c.option
+  if (opt) {
+    set('--opt', opt)
+    set('--opt-h', mix(onColor(opt, PAPER), opt, 0.08))
+  }
+  const ot = ok(c.optionText, opt ?? bg) ?? (opt && !ok(ink, opt) ? onColor(opt, PAPER) : null)
+  if (ot) set('--ot', ot)
+  if (c.optionBorder) set('--ob', c.optionBorder)
+  const sel = ok(c.selected, bg, 1.5) ?? accent
+  set('--sel', sel)
+  set('--son', onColor(sel))
+  const btn = c.button ?? accent
+  set('--btn', btn)
+  set('--bt', ok(c.buttonText, btn) ?? onColor(btn))
+  if (c.border) set('--edge', c.border)
+  const bw = px(look.borderWidth, 0, 4)
+  if (bw !== null) set('--bw', `${bw}px`)
+  const sh = SHADOWS[word(SHADOWS, look.shadow, 'soft')]
+  if (sh) set('--sh', sh)
+  const font = word({ ...FONTS, site: 0, custom: 0 }, look.font, 'site')
+  const name = typeof look.fontName === 'string' && /^[\p{L}\p{N} -]{1,40}$/u.test(look.fontName)
   if (font === 'site') {
     // the page's own font, as the browser computed it: a value, never CSS text
     const f = typeof getComputedStyle === 'function' && getComputedStyle(document.body).fontFamily
     if (f) set('--ff', f)
-  } else set('--ff', FONTS[font])
-  const [r, ri] = RADII[word(RADII, look.radius, 'large')]
+  } else if (font === 'custom') set('--ff', name ? `"${look.fontName}",${SANS}` : SANS)
+  else set('--ff', FONTS[font])
+  const [r, ri] = RADII[word(RADII, look.radius, 'medium')]
   set('--r', `${r}px`)
   set('--ri', `${ri}px`)
   const [wd, fs, pad] = SIZES[word(SIZES, look.size, 'medium')]
-  set('--wd', `${wd}px`)
+  const [dp, gap, mt] = DENSITY[word(DENSITY, look.density, 'regular')]
+  set('--wd', `${px(look.width, 280, 480) ?? wd}px`)
   set('--fs', `${fs}px`)
-  set('--pad', `${pad}px`)
+  set('--pad', `${pad + dp}px`)
+  set('--gap', `${gap}px`)
+  set('--mt', `${mt}px`)
+  set('--ts', `${TITLE[word(TITLE, look.titleSize, 'regular')]}px`)
+  set('--tw', WEIGHT[word(WEIGHT, look.titleWeight, 'semibold')])
+  set('--fw', WEIGHT[word(WEIGHT, look.bodyWeight, 'regular')])
+  set('--z', LAYER[word(LAYER, look.layer, 'top')])
+  const ox = px(look.offsetX, 0, 160)
+  const oy = px(look.offsetY, 0, 160)
+  if (ox !== null) set('--ox', `${ox}px`)
+  if (oy !== null) set('--oy', `${oy}px`)
+  add(ANIM[word(ANIM, look.animation, 'rise')])
+  if (look.align === 'center') add('ce')
+  if (look.scale === 'traffic') {
+    add('tr')
+    set('--lo', mix('#e5484d', bg, 0.18))
+    set('--mi', mix('#f5a524', bg, 0.2))
+    set('--hi', mix('#30a46c', bg, 0.18))
+  }
 }
 
 /**
@@ -339,6 +437,10 @@ export function mount(
 ): Mounted {
   styled(root)
   const w = WORDS[card.lang] ?? WORDS.en
+  // their own words on the send button: plain text, at most 20 characters, no control characters
+  const own = typeof look.sendLabel === 'string' ? look.sendLabel.trim() : ''
+  const sendWord =
+    own && own.length <= 20 && !/[\p{Cc}\u202a-\u202e\u2066-\u2069]/u.test(own) ? own : w.send
   const ed = o.edit
   const wrap = el(
     'div',
@@ -399,7 +501,7 @@ export function mount(
   const row = el('div', 'r')
   const err = el('span', 'e')
   err.setAttribute('role', 'status')
-  const sendBtn = el('button', 'b', w.send)
+  const sendBtn = el('button', 'b', sendWord)
   sendBtn.type = 'button'
   row.append(err, sendBtn)
   if (ed && card.followup != null && card.type !== 'text') {
@@ -437,7 +539,7 @@ export function mount(
     } catch {
       sent = false
       sendBtn.removeAttribute('aria-busy')
-      sendBtn.textContent = w.send
+      sendBtn.textContent = sendWord
       err.textContent = w.failed
       return
     }
@@ -500,10 +602,14 @@ export function mount(
     const g = el('div', 'th')
     g.setAttribute('role', 'group')
     g.setAttribute('aria-labelledby', titleId)
-    g.append(
-      option('up', w.yes, 'o1', icon(ICONS.up, 24)),
-      option('down', w.no, 'o1', icon(ICONS.down, 24)),
-    )
+    const set = word(THUMBS, look.icons, 'thumbs')
+    const face = (k: 0 | 1) =>
+      set === 'words'
+        ? el('span', undefined, k ? w.no : w.yes)
+        : set === 'emoji'
+          ? el('span', 'em', k ? '👎' : '👍')
+          : icon(THUMBS[set][k], 24)
+    g.append(option('up', w.yes, 'o1', face(0)), option('down', w.no, 'o1', face(1)))
     c.append(g)
   } else if (card.type === 'nps') {
     const g = el('div', 'n')
