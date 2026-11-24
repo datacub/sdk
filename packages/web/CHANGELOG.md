@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/datacub/sdk/compare/web-v0.6.0...web-v0.7.0) (2026-11-24)
+
+
+### Features
+
+* **web:** much more feedback card look ([#10](https://github.com/datacub/sdk/issues/10)) ([d0f1d20](https://github.com/datacub/sdk/commit/d0f1d2007a0fd899e3dcafef47b083202a5fdabd))
+
 ## [0.6.0](https://github.com/datacub/sdk/compare/web-v0.5.0...web-v0.6.0) (2026-11-24)
 
 
