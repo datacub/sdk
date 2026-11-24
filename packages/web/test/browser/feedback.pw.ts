@@ -185,3 +185,121 @@ test('feedback.look in init wins over datacub; a bad value is dropped, not used'
   expect(await vars(page, '--a', '--r')).toEqual(['#fafafa', '0px'])
   expect(await vars(page, '--ff')).toEqual([expect.stringContaining('system-ui')])
 })
+
+test('the full look: colours per part, shape, type, icons, placement; out of range values are dropped', async ({
+  page,
+}) => {
+  const run = newRun()
+  await setup(page, run, {
+    hint: true,
+    questions: [QUESTION],
+    settings: {
+      accent: '#2563eb',
+      theme: 'light',
+      title: '#0f766e',
+      option: '#eef2ff',
+      optionText: '#1e1b4b',
+      selected: '#7c3aed',
+      button: '#db2777',
+      // unreadable on that button: the readable one is used
+      buttonText: '#db2777',
+      close: '#0f766e',
+      border: '#2563eb',
+      borderWidth: 2,
+      shadow: 'none',
+      width: 420,
+      density: 'roomy',
+      font: 'custom',
+      fontName: 'IBM Plex Sans Arabic',
+      titleSize: 'large',
+      titleWeight: 'bold',
+      align: 'center',
+      icons: 'faces',
+      animation: 'fade',
+      offsetX: 40,
+      offsetY: 96,
+      layer: 'normal',
+      dark: { background: '#000000' },
+    },
+  })
+  await page.goto(`/feedback.html?run=${run}`)
+  await expect(card(page)).toHaveCount(1)
+  expect(
+    await vars(page, '--tc', '--opt', '--ot', '--sel', '--btn', '--bt', '--xc', '--edge', '--bw'),
+  ).toEqual([
+    '#0f766e',
+    '#eef2ff',
+    '#1e1b4b',
+    '#7c3aed',
+    '#db2777',
+    '#ffffff',
+    '#0f766e',
+    '#2563eb',
+    '2px',
+  ])
+  expect(await vars(page, '--sh', '--wd', '--pad', '--ts', '--tw', '--z', '--ox', '--oy')).toEqual([
+    'none',
+    '420px',
+    '20px',
+    '4px',
+    '700',
+    '999',
+    '40px',
+    '96px',
+  ])
+  expect(await vars(page, '--ff', '--bg')).toEqual([
+    expect.stringContaining('"IBM Plex Sans Arabic"'),
+    '',
+  ])
+  await expect(card(page)).toHaveClass(/\baf\b/)
+  await expect(card(page)).toHaveClass(/\bce\b/)
+  // faces: a drawn icon, no emoji or words
+  await expect(card(page).locator('.th .o1 svg')).toHaveCount(2)
+
+  const bad = {
+    width: 9999,
+    borderWidth: 1.5,
+    offsetY: -10,
+    fontName: 'x";background:url(//e)',
+    font: 'custom',
+    shadow: 'url(x)',
+    layer: 'max',
+    title: 'red',
+  }
+  await page.goto(`/feedback.html?run=${run}&look=${encodeURIComponent(JSON.stringify(bad))}`)
+  await expect(card(page)).toHaveCount(1)
+  // a value in code replaces the one from datacub, and a bad one is dropped: the default look
+  expect(await vars(page, '--wd', '--bw', '--oy', '--sh', '--z', '--tc')).toEqual([
+    '360px',
+    '',
+    '',
+    '',
+    '2147483000',
+    '',
+  ])
+  expect(await vars(page, '--ff')).toEqual([expect.not.stringContaining('background')])
+})
+
+test('theme auto takes the dark colours in dark mode', async ({ page }) => {
+  const run = newRun()
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await setup(page, run, {
+    hint: true,
+    questions: [QUESTION],
+    settings: {
+      theme: 'auto',
+      accent: '#1f1f1f',
+      background: '#fff7ed',
+      dark: { background: '#0b1220', accent: '#f59e0b', button: '#22c55e' },
+    },
+  })
+  await page.goto(`/feedback.html?run=${run}`)
+  await expect(card(page)).toHaveCount(1)
+  expect(await vars(page, '--bg', '--a', '--btn')).toEqual(['#0b1220', '#f59e0b', '#22c55e'])
+
+  // no dark colours: the theme's dark card, the brand colour carried over
+  const look = { theme: 'auto', accent: '#2563eb', background: '#fff7ed', dark: null }
+  await page.goto(`/feedback.html?run=${run}&look=${encodeURIComponent(JSON.stringify(look))}`)
+  await expect(card(page)).toHaveCount(1)
+  expect(await vars(page, '--bg', '--a')).toEqual(['', '#2563eb'])
+})

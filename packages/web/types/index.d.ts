@@ -1,4 +1,4 @@
-export declare const VERSION = "0.5.0";
+export declare const VERSION = "0.6.0";
 export type Property = string | number | boolean | null | Date | Property[] | {
     [key: string]: Property;
 };
@@ -23,6 +23,60 @@ export interface FeedbackLook {
     background?: string | null;
     /** text colour; ignored when it does not read well on the card. #rrggbb */
     text?: string | null;
+    /** the question's colour. #rrggbb */
+    title?: string | null;
+    /** answer buttons: fill, words, edge. #rrggbb */
+    option?: string | null;
+    optionText?: string | null;
+    optionBorder?: string | null;
+    /** the chosen answer, in place of the brand colour. #rrggbb */
+    selected?: string | null;
+    /** the send button and its words, in place of the brand colour. #rrggbb */
+    button?: string | null;
+    buttonText?: string | null;
+    /** the close icon. #rrggbb */
+    close?: string | null;
+    /** the card's edge colour and width, 0 to 4 px. #rrggbb */
+    border?: string | null;
+    borderWidth?: number | null;
+    shadow?: 'none' | 'soft' | 'medium' | 'strong';
+    /** card width, 280 to 480 px, in place of the size's */
+    width?: number | null;
+    /** space inside the card */
+    density?: 'compact' | 'regular' | 'roomy';
+    /** with font 'custom': a font your page already loads, letters, digits, spaces and hyphens only */
+    fontName?: string | null;
+    titleSize?: 'small' | 'regular' | 'large';
+    titleWeight?: 'regular' | 'medium' | 'semibold' | 'bold';
+    bodyWeight?: 'regular' | 'medium' | 'semibold';
+    align?: 'start' | 'center';
+    /** the yes and no buttons */
+    icons?: 'thumbs' | 'faces' | 'emoji' | 'words';
+    /** 0 to 10 scores: 'traffic' tints 0 to 6 red, 7 and 8 amber, 9 and 10 green */
+    scale?: 'plain' | 'traffic';
+    animation?: 'rise' | 'fade' | 'slide' | 'none';
+    /** distance from the side and the bottom of the window, 0 to 160 px (phones keep 12 px at the sides) */
+    offsetX?: number;
+    offsetY?: number;
+    /** 'top' above everything, 'high' above most of a page, 'normal' under the page's own popups */
+    layer?: 'top' | 'high' | 'normal';
+    /** with theme 'auto': the colours for visitors in dark mode (the brand colour carries over); the colours above are for light mode */
+    dark?: FeedbackColors | null;
+}
+/** The colours that have a dark mode version. #rrggbb */
+export interface FeedbackColors {
+    accent?: string | null;
+    background?: string | null;
+    text?: string | null;
+    title?: string | null;
+    option?: string | null;
+    optionText?: string | null;
+    optionBorder?: string | null;
+    selected?: string | null;
+    button?: string | null;
+    buttonText?: string | null;
+    close?: string | null;
+    border?: string | null;
 }
 export interface InitOptions {
     /** Ingestion origin or first-party proxy path. Default https://in.datacub.to */
