@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/datacub/sdk/compare/web-v0.7.0...web-v0.8.0) (2026-11-28)
+
+
+### Features
+
+* **web:** datacub.feedback.shown, send and dismissed for your own feedback ui ([#12](https://github.com/datacub/sdk/issues/12)) ([641c87a](https://github.com/datacub/sdk/commit/641c87a177237d05b537f7d73a12e11f19c13a21))
+
 ## [0.7.0](https://github.com/datacub/sdk/compare/web-v0.6.0...web-v0.7.0) (2026-11-24)
 
 
