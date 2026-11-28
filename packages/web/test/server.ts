@@ -18,6 +18,7 @@ interface Run {
     script: number
     asks: number
     seen: number
+    posts: { path: string; body: Record<string, unknown> }[]
     settings?: Record<string, unknown>
   }
 }
@@ -30,7 +31,7 @@ const run = (id: string) => {
       batches: [],
       requests: 0,
       plan: [],
-      fb: { hint: false, questions: [], script: 0, asks: 0, seen: 0 },
+      fb: { hint: false, questions: [], script: 0, asks: 0, seen: 0, posts: [] },
     }
     runs.set(id, r)
   }
@@ -89,7 +90,9 @@ Bun.serve({
       }
       if (tail.startsWith('v1/feedback/') && req.method === 'POST') {
         if (tail === 'v1/feedback/seen') r.fb.seen++
-        return Response.json({ ok: true })
+        // what was sent, for a site's own UI (datacub.feedback.shown, send, dismissed)
+        r.fb.posts.push({ path: tail, body: await req.json() })
+        return Response.json({ ok: true, version: 3 })
       }
       if (tail === 'feedback' && req.method === 'POST') {
         Object.assign(r.fb, await req.json())

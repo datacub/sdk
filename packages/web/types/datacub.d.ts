@@ -1,5 +1,5 @@
-// datacub web SDK 0.6.0, for the script tag. Save as datacub.d.ts in your project: `datacub` is then typed.
-export declare const VERSION = "0.6.0";
+// datacub web SDK 0.7.0, for the script tag. Save as datacub.d.ts in your project: `datacub` is then typed.
+export declare const VERSION = "0.7.0";
 export type Property = string | number | boolean | null | Date | Property[] | {
     [key: string]: Property;
 };
@@ -151,6 +151,27 @@ export interface GrantOptions {
     /** Only from an explicit user action: lets a grant override Global Privacy Control. */
     overrideGPC?: boolean;
 }
+/** Your own feedback UI: datacub stores and counts it the same as its own card. */
+export interface FeedbackApi {
+    (): void;
+    /**
+     * Call before you show a question from Feedback. true: datacub's limits allow it now, and it
+     * counts as shown. false: not now (limits, audience, paused, before consent) or offline.
+     */
+    shown(questionId: string): Promise<boolean>;
+    /**
+     * Store an answer. With question: choice is one of its answer ids (a score '0' to '10', 'yes' or
+     * 'no'), text the written answer or follow-up. Without: general feedback, text required, choice
+     * optionally 'idea', 'problem' or 'confusing'. false when refused or offline.
+     */
+    send(answer: {
+        question?: string;
+        choice?: string;
+        text?: string;
+    }): Promise<boolean>;
+    /** The person closed the question without answering: it is not offered to them again. */
+    dismissed(questionId: string): void;
+}
 export interface DatacubClient {
     init(publicKey: string, options?: InitOptions): void;
     track(event: string, properties?: Properties): void;
@@ -170,8 +191,11 @@ export interface DatacubClient {
     ask?(questionId: string, options?: {
         into?: Element | string;
     }): void;
-    /** Open the "Send feedback" card (the feedback widget loads first when it is not on the page yet). */
-    feedback?(): void;
+    /**
+     * Open the "Send feedback" card (the feedback widget loads first when it is not on the page yet).
+     * With your own feedback UI, use its methods instead: shown, send and dismissed.
+     */
+    feedback?: FeedbackApi;
     /**
      * Added by the script-tag flags module (/v1/flags.js; with npm, import flag from @datacub/web/flags): is this feature flag on for this
      * visitor? false when it is off, unknown, or cannot be decided (before consent, offline).
