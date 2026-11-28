@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test'
-import { newRun, waitFor } from './helpers.ts'
+import { events, newRun, waitFor } from './helpers.ts'
 
 // One script tag: the core loads the feedback widget itself, only when the batch answer says the
 // project has a live question or the page opens the "Send feedback" card, and only while tracking.
@@ -325,4 +325,56 @@ test('theme auto takes the dark colours in dark mode', async ({ page }) => {
   await page.goto(`/feedback.html?run=${run}&look=${encodeURIComponent(JSON.stringify(look))}`)
   await expect(card(page)).toHaveCount(1)
   expect(await vars(page, '--bg', '--a')).toEqual(['', '#2563eb'])
+})
+
+test('a site with its own UI: shown, send and dismissed reach the same endpoints and events, no widget', async ({
+  page,
+}) => {
+  const run = newRun()
+  await page.goto(`/feedback.html?run=${run}`)
+  await waitFor(page, run, 1, '$pageview')
+  const r = await page.evaluate(async (id) => {
+    const f = window.datacub.feedback
+    if (!f) return null
+    const shown = await f.shown(id)
+    const sent = await f.send({ question: id, choice: 'yes', text: 'great' })
+    const general = await f.send({ text: 'add exports', choice: 'idea' })
+    f.dismissed(id)
+    return { shown, sent, general }
+  }, QUESTION.id)
+  expect(r).toEqual({ shown: true, sent: true, general: true })
+  await waitFor(page, run, 1, '$feedback_dismissed')
+  const posts = (
+    (await (await page.request.get(`/r/${run}/log`)).json()) as {
+      fb: { posts: { path: string; body: Record<string, unknown> }[] }
+    }
+  ).fb.posts
+  expect(posts.map((p) => p.path)).toEqual([
+    'v1/feedback/seen',
+    'v1/feedback/answer',
+    'v1/feedback/answer',
+    'v1/feedback/seen',
+  ])
+  const [shown, answer, general, closed] = posts.map((p) => p.body)
+  expect(shown).toMatchObject({ question: QUESTION.id, kind: 'shown' })
+  expect(answer).toMatchObject({
+    question: QUESTION.id,
+    version: null,
+    choice: 'yes',
+    text: 'great',
+  })
+  expect(answer?.anon_id).toBe(shown?.anon_id)
+  expect(general).toMatchObject({ question: null, choice: 'idea', text: 'add exports' })
+  expect(closed).toMatchObject({ question: QUESTION.id, kind: 'dismissed' })
+  const ev = await events(page, run)
+  const of = (n: string) => ev.filter((e) => e.event === n).map((e) => e.properties)
+  expect(of('$feedback_shown')).toEqual([{ $question_id: QUESTION.id, $version: 3 }])
+  expect(of('$feedback_dismissed')).toEqual([{ $question_id: QUESTION.id, $version: 3 }])
+  expect(of('$feedback_answered')).toHaveLength(2)
+  expect(of('$feedback_answered')[0]).toMatchObject({
+    $question_id: QUESTION.id,
+    $version: 3,
+    $choice: 'yes',
+  })
+  expect((await fb(page, run)).script).toBe(0)
 })

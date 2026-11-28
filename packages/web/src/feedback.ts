@@ -937,7 +937,8 @@ export function start(datacub: Client) {
       // inline is the developer's own placement: it does not wait for the person to stop typing
       if (q) void attempt(q, Date.now() + HOLD_MS, into instanceof Element ? into : null)
     })
-  datacub.feedback = openGeneral
+  // keeps the core's shown, send and dismissed for sites with their own UI
+  datacub.feedback = Object.assign(openGeneral, datacub.feedback)
   document.addEventListener('click', (e) => {
     const t = e.target as Element | null
     if (t?.closest?.('[data-datacub-feedback]')) openGeneral()

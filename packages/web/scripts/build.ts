@@ -9,7 +9,8 @@ import { writeTypes } from './types.ts'
 
 // 0.3.1: 9216 to 9472 for the insights integrity hash and the cookie-free page-hide send
 // 0.5.0: 9472 to 9728 for loading the feedback widget itself (one script tag instead of two)
-const BUDGET = 9728
+// 0.8.0: 9728 to 10048 for datacub.feedback.shown, send and dismissed (a site's own feedback UI)
+const BUDGET = 10048
 // 0.7.0: 8192 to 9728 for the card's full look (colours per part, dark mode colours, border, shadow,
 // width, spacing, title type, icon sets, score colours, entrance, offsets, layer). Every value is
 // checked in the widget, so the checks ship with it; sites without a live question never load it.

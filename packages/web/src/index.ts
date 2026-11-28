@@ -179,6 +179,24 @@ export interface GrantOptions {
   overrideGPC?: boolean
 }
 
+/** Your own feedback UI: datacub stores and counts it the same as its own card. */
+export interface FeedbackApi {
+  (): void
+  /**
+   * Call before you show a question from Feedback. true: datacub's limits allow it now, and it
+   * counts as shown. false: not now (limits, audience, paused, before consent) or offline.
+   */
+  shown(questionId: string): Promise<boolean>
+  /**
+   * Store an answer. With question: choice is one of its answer ids (a score '0' to '10', 'yes' or
+   * 'no'), text the written answer or follow-up. Without: general feedback, text required, choice
+   * optionally 'idea', 'problem' or 'confusing'. false when refused or offline.
+   */
+  send(answer: { question?: string; choice?: string; text?: string }): Promise<boolean>
+  /** The person closed the question without answering: it is not offered to them again. */
+  dismissed(questionId: string): void
+}
+
 export interface DatacubClient {
   init(publicKey: string, options?: InitOptions): void
   track(event: string, properties?: Properties): void
@@ -195,8 +213,11 @@ export interface DatacubClient {
   consent: { grant(options?: GrantOptions): void; revoke(): void }
   /** Show one question now (the feedback widget loads first when it is not on the page yet). */
   ask?(questionId: string, options?: { into?: Element | string }): void
-  /** Open the "Send feedback" card (the feedback widget loads first when it is not on the page yet). */
-  feedback?(): void
+  /**
+   * Open the "Send feedback" card (the feedback widget loads first when it is not on the page yet).
+   * With your own feedback UI, use its methods instead: shown, send and dismissed.
+   */
+  feedback?: FeedbackApi
   /**
    * Added by the script-tag flags module (/v1/flags.js; with npm, import flag from @datacub/web/flags): is this feature flag on for this
    * visitor? false when it is off, unknown, or cannot be decided (before consent, offline).
@@ -1347,6 +1368,22 @@ const api = (f: Fn) =>
     else if (early.length < 100) early.push([f, a])
   })
 
+// your own feedback UI: the widget's endpoints and events (capture feedback.ts), the version from
+// the server's answer
+const fb = (path: string, body: Ev): Promise<Ev> =>
+  anon
+    ? fetch(endpoint.replace(/batch$/, `feedback${path}`), {
+        method: 'POST',
+        body: JSON.stringify({ api_key: key, anon_id: anon, ...body }),
+        credentials: 'omit',
+        keepalive: true,
+      })
+        .then((r) => (r.ok ? r.json() : {}))
+        .catch(() => ({}))
+    : Promise.resolve({})
+const fbIds = (q: unknown, r: Ev) => (q ? { $question_id: q, $version: r.version } : {})
+const fbDone = (r: Ev, e: string, p: Ev) => (r.ok && emit(e, p, {}, true), !!r.ok)
+
 const datacub: DatacubClient = {
   init: guard((publicKey: string, o?: InitOptions) => {
     if (typeof window === 'undefined' || !globalThis.crypto?.getRandomValues) return
@@ -1370,7 +1407,38 @@ const datacub: DatacubClient = {
   },
   // until the widget starts and replaces them
   ask: api((...a: unknown[]) => widget(['ask', a])),
-  feedback: api(() => widget(['feedback', []])),
+  feedback: Object.assign(
+    api(() => widget(['feedback', []])),
+    {
+      shown: (q: string) =>
+        fb('/seen', { question: q, kind: 'shown', user_id: user }).then((r) =>
+          fbDone(r, '$feedback_shown', fbIds(q, r)),
+        ),
+      send: (a: { question?: string; choice?: string; text?: string }) => {
+        const id = uuid()
+        return fb('/answer', {
+          id,
+          question: a?.question ?? null,
+          version: null,
+          user_id: user,
+          session_id: sid || null,
+          choice: a?.choice ?? null,
+          text: a?.text ?? null,
+          path: page?.path ?? null,
+        }).then((r) =>
+          fbDone(r, '$feedback_answered', {
+            ...fbIds(a.question, r),
+            $response_id: id,
+            $choice: a.choice ?? null,
+          }),
+        )
+      },
+      dismissed: (q: string) =>
+        void fb('/seen', { question: q, kind: 'dismissed' }).then((r) =>
+          fbDone(r, '$feedback_dismissed', fbIds(q, r)),
+        ),
+    },
+  ),
   // the feedback module's way in (src/feedback.ts): who is here and how to send. The ids are
   // empty until grant() and again after revoke()
   _fb: () => [state, cookies, key, endpoint, anon, user, sid, emit, claim, look],
